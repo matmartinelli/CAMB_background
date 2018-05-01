@@ -207,10 +207,17 @@
 
     subroutine init_background
     use LambdaGeneral
+    use initsolver !MMmod: DHOST
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
     is_cosmological_constant = .not. use_tabulated_w .and. w_lam==-1_dl .and. wa_ppf==0._dl
+
+    !MMmod: DHOST
+    !calling ODE solver for DHOST background
+    call deinterface(CP)
+
+
     end  subroutine init_background
 
 
@@ -221,21 +228,27 @@
     use ModelParams
     use MassiveNu
     use LambdaGeneral
+    use initsolver !MMmod: DHOST
     implicit none
     real(dl) dtauda
     real(dl), intent(IN) :: a
     real(dl) rhonu,grhoa2, a2
+    real(dl) my_grhov !MMmod: DHOST rho_DE
     integer nu_i
 
     a2=a**2
 
     !  8*pi*G*rho*a**4.
     grhoa2=grhok*a2+(grhoc+grhob)*a+grhog+grhornomass
-    if (is_cosmological_constant) then
-        grhoa2=grhoa2+grhov*a2**2
-    else
-        grhoa2=grhoa2+ grho_de(a)
-    end if
+!MMmod: DHOST-------------------------
+    call getrhoDE(-1+1/a,my_grhov)
+    grhoa2=grhoa2+my_grhov*a2**2
+!    if (is_cosmological_constant) then
+!        grhoa2=grhoa2+grhov*a2**2
+!    else
+!        grhoa2=grhoa2+ grho_de(a)
+!    end if
+!-------------------------------------
 
     if (CP%Num_Nu_massive /= 0) then
         !Get massive neutrino density relative to massless
