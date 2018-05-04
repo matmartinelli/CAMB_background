@@ -125,19 +125,23 @@ subroutine xpsys(CP,n,k,h,x,f)
       real, dimension (0:n) ::  x, f
       integer n,k
       real :: h      !stepsize
-      real(dl) :: redshift
+      real(dl) :: redshift, derivative
 
 
       !Gets redshift for this step 
       redshift = initial_z + k*h
 
+      !Equations are insane, thus I compute the r.h.s. in a separate routine
+      !to make things less messy
+      call get_derivative(CP,redshift,n,x,derivative)
+      
 
       !These are the actual derivatives CHANGE ME
-      !x'(0) = f(0)
-      !x'(1) = f(1)
+      !x'(0) = f(0)---> x(0) = phi
+      !x'(1) = f(1)---> x(1) = psi = phi'
 
-      f(0) = 1._dl
-      f(1) = 1._dl
+      f(0) = x(1)
+      f(1) = derivative
 
 end subroutine xpsys
 
@@ -319,5 +323,60 @@ end do
 dx = u - x(i)
 ispline = y(i) + dx*(b(i) + dx*(c(i) + dx*d(i)))
 end function ispline
+
+
+subroutine get_derivative(CP,z,n,x,derivative)
+!This subroutine obtains the r.h.s. of the phi'' equation
+!Taken from Jorgos' notebook
+Type(CAMBparams) CP
+real, dimension (0:n), intent(in) ::  x
+real, intent(in) :: z
+integer n,k
+real :: hubble
+real(dl), intent(out) :: derivative
+
+rhom = (1-CP%omegav)*(1+z)**3. !This is the adimensional rho_m(z)
+
+
+
+!Need to substitute the y!
+hubble =(2*(1 + z)**2.*(6*CP%c3_dhost*y(z)**3.*(1 + 2*CP%c4_dhost*y(z)**4)**2. + &
+     &      Sqrt(3)*Sqrt(-((1 + 2*CP%c4_dhost*y(z)**4)**3.*(CP%c2_dhost*y(z)**2.* &
+     &              (4 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*y(z)**4. + (9*CP%beta_dhost**2. + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2.)*y(z)**8.) - &
+     &             4*(1 + 2*CP%c4_dhost*y(z)**4.)*(3*CP%c3_dhost**2*y(z)**6. + (2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4)*rhom))))))/ &
+     &  (3.*(1 + 2*CP%c4_dhost*y(z)**4.)*(2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4.)* &
+     &    (2*(1 + z)**3. + 4*(1 + z)**3.*CP%c4_dhost*y(z)**4. + CP%beta_dhost*y(z)**3.*Derivative(1)(y)(z)))
+
+
+
+
+derivative = (2*(1 + z)**2*y(z)*(-12*CP%c3_dhost*y(z)*(1 + 2*CP%c4_dhost*y(z)**4.)* &
+     &       (6*CP%c3_dhost**2.*y(z)**6.*(1 + 2*CP%c4_dhost*y(z)**4.)**2. + (1 + 2*CP%c4_dhost*y(z)**4.)**2.*(2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4.)*rhom + &
+     &         Sqrt(3)*CP%c3_dhost*y(z)**3*Sqrt((1 + 2*CP%c4_dhost*y(z)**4)**3* &
+     &            (-(CP%c2_dhost*y(z)**2.*(4 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*y(z)**4. + (9*CP%beta_dhost**2. + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2.)*y(z)**8.)) + &
+     &              4*(1 + 2*CP%c4_dhost*y(z)**4.)*(3*CP%c3_dhost**2.*y(z)**6. + (2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4.)*rhom)))) + &
+     &      CP%c2_dhost*(2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4.)* &
+     &       (6*CP%c3_dhost*y(z)**3.*(1 + 2*CP%c4_dhost*y(z)**4.)**2.*(2 + (3*CP%beta_dhost + 4*CP%c4_dhost)*y(z)**4.) + &
+     &         Sqrt(3)*(2 + 3*(CP%beta_dhost + 4*CP%c4_dhost)*y(z)**4.)*Sqrt((1 + 2*CP%c4_dhost*y(z)**4.)**3.* &
+     &            (-(CP%c2_dhost*y(z)**2.*(4 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*y(z)**4. + (9*CP%beta_dhost**2. + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2.)*y(z)**8.)) + &
+     &              4*(1 + 2*CP%c4_dhost*y(z)**4.)*(3*CP%c3_dhost**2.*y(z)**6. + (2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4.)*rhom))))))/ &
+     &  (hubble*(1 + 2*CP%c4_dhost*y(z)**4.)*(CP%c2_dhost*(16 + 96*(CP%beta_dhost + 2*CP%c4_dhost)*y(z)**4. + &
+     &         8*(27*CP%beta_dhost**2. + 204*CP%beta_dhost*CP%c4_dhost + 160*CP%c4_dhost**2.)*y(z)**8. + &
+     &         24*(9*CP%beta_dhost**3. + 126*CP%beta_dhost**2.*CP%c4_dhost + 512*CP%beta_dhost*CP%c4_dhost**2. + 480*CP%c4_dhost**3.)*y(z)**12. + &
+     &         3*(3*CP%beta_dhost + 20*CP%c4_dhost)**2.*(3*CP%beta_dhost**2. + 16*CP%beta_dhost*CP%c4_dhost + 16*CP%c4_dhost**2.)*y(z)**16.) - &
+     &      2*y(z)*(6*CP%c3_dhost**2.*y(z)**3.*(1 + 2*CP%c4_dhost*y(z)**4.)* &
+     &          (12 + 9*CP%beta_dhost**2.*y(z)**8. + 240*CP%c4_dhost**2.*y(z)**8. + 16*CP%c4_dhost*(y(z)**4. + 6*CP%beta_dhost*y(z)**8.)) + &
+     &         y(z)*(1 + 2*CP%c4_dhost*y(z)**4.)*(6400*CP%c4_dhost**3.*y(z)**8 + 80*CP%c4_dhost**2.*y(z)**4.*(-16 + 39*CP%beta_dhost*y(z)**4.) + &
+     &            9*CP%beta_dhost*(-4 - 4*CP%beta_dhost*y(z)**4. + 3*CP%beta_dhost**2.*y(z)**8.) + 24*CP%c4_dhost*(-8 - 18*CP%beta_dhost*y(z)**4. + 21*CP%beta_dhost**2.*y(z)**8.))*rhom - &
+     &         4*Sqrt(3)*CP%c3_dhost*(-2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4.)* &
+     &          Sqrt((1 + 2*CP%c4_dhost*y(z)**4.)**3.*(-(CP%c2_dhost*y(z)**2.* &
+     &                 (4 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*y(z)**4. + (9*CP%beta_dhost**2. + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2.)*y(z)**8.)) + &
+     &              4*(1 + 2*CP%c4_dhost*y(z)**4.)*(3*CP%c3_dhost**2.*y(z)**6. + (2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*y(z)**4.)*rhom)))))) &
+
+
+
+end subroutine get_derivative
+
+
 
 end module initsolver

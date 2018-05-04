@@ -102,7 +102,15 @@
 
     call DarkEnergy_ReadParams(DefIni)
 
+    !MMmod: DHOST decide what to do with H0!
     P%h0     = Ini_Read_Double('hubble')
+
+    !MMmod: DHOST parameters
+    P%c2_dhost   = Ini_Read_Double('c2_dhost') 
+    P%c3_dhost   = Ini_Read_Double('c3_dhost')
+    P%c4_dhost   = Ini_Read_Double('c4_dhost')
+    P%beta_dhost = Ini_Read_Double('beta_dhost')
+
 
     if (Ini_Read_Logical('use_physical',.false.)) then
         P%omegab = Ini_Read_Double('ombh2')/(P%H0/100)**2
@@ -201,6 +209,7 @@
     !JD 08/13 end changes
 
     P%transfer%kmax=P%transfer%kmax*(P%h0/100._dl)
+
 
     Ini_fail_on_not_found = .false.
 

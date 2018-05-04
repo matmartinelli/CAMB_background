@@ -120,6 +120,8 @@
         real(dl)  :: Nu_mass_degeneracies(max_nu)
         real(dl)  :: Nu_mass_fractions(max_nu) !The ratios of the total densities
         integer   :: Nu_mass_numbers(max_nu) !physical number per eigenstate
+        !MMmod: DHOST parameters
+        real(dl)  :: c2_dhost, c3_dhost, c4_dhost, beta_dhost
 
         integer   :: Scalar_initial_condition
         !must be one of the initial_xxx values defined in GaugeInterface
