@@ -233,7 +233,7 @@
     real(dl) dtauda
     real(dl), intent(IN) :: a
     real(dl) rhonu,grhoa2, a2
-    real(dl) my_grhov !MMmod: DHOST rho_DE
+    real(dl) myhubble !MMmod: DHOST rho_DE
     integer nu_i
 
     a2=a**2
@@ -241,13 +241,11 @@
     !  8*pi*G*rho*a**4.
     grhoa2=grhok*a2+(grhoc+grhob)*a+grhog+grhornomass
 !MMmod: DHOST-------------------------
-    call getrhoDE(-1+1/a,my_grhov)
-    grhoa2=grhoa2+my_grhov*a2**2
-!    if (is_cosmological_constant) then
-!        grhoa2=grhoa2+grhov*a2**2
-!    else
-!        grhoa2=grhoa2+ grho_de(a)
-!    end if
+    if (is_cosmological_constant) then
+        grhoa2=grhoa2+grhov*a2**2
+    else
+        grhoa2=grhoa2+ grho_de(a)
+    end if
 !-------------------------------------
 
     if (CP%Num_Nu_massive /= 0) then
@@ -258,7 +256,9 @@
         end do
     end if
 
-    dtauda=sqrt(3/grhoa2)
+!    dtauda=sqrt(3/grhoa2)
+    call getH(a,myhubble)
+    dtauda = a/hubble
 
     end function dtauda
 
