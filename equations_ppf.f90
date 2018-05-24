@@ -258,7 +258,7 @@
 
 !    dtauda=sqrt(3/grhoa2)
     call getH(a,myhubble)
-    dtauda = a/hubble
+    dtauda = a/myhubble
 
     end function dtauda
 

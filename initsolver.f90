@@ -38,7 +38,7 @@ else
    out_hubble = ispline(final_z, z_ode, solH, bh, ch, dh, nsteps)
 end if
 
-end subroutine getrhoDE
+end subroutine getH
 
 subroutine deinterface(CP)
       Type(CAMBparams) CP
@@ -57,7 +57,7 @@ subroutine deinterface(CP)
 
       !initializing global ODE solver parameters from CAMB
       initial_z = 0._dl
-      final_z   = 1._dl
+      final_z   = 10._dl
 
       !allocating arrays
       if (allocated(z_ode) .eqv. .false.) allocate(z_ode(nsteps), sol1(nsteps), sol2(nsteps),solH(nsteps))
