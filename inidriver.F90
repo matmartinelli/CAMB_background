@@ -110,6 +110,7 @@
     P%c3_dhost   = Ini_Read_Double('c3_dhost')
     P%c4_dhost   = Ini_Read_Double('c4_dhost')
     P%beta_dhost = Ini_Read_Double('beta_dhost')
+    P%inired     = Ini_Read_Double('initial_redshift')
 
 
     if (Ini_Read_Logical('use_physical',.false.)) then

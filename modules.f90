@@ -122,6 +122,7 @@
         integer   :: Nu_mass_numbers(max_nu) !physical number per eigenstate
         !MMmod: DHOST parameters
         real(dl)  :: c2_dhost, c3_dhost, c4_dhost, beta_dhost!, xi_dhost
+        real(dl)  :: inired
 
         integer   :: Scalar_initial_condition
         !must be one of the initial_xxx values defined in GaugeInterface
