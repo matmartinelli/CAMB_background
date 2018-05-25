@@ -72,7 +72,7 @@ subroutine deinterface(CP)
       if (debugging) write(*,*) 'xi_dhost=',xi_dhost
 
       !Initial conditions for x(0) and x(1). TO BE CHECKED
-      x = (/ 3.*(1.-CP%omegav)*(1+initial_z)**3.,xi_dhost/sqrt((1-CP%omegav)*(1+initial_z)**3.) /) 
+      x = (/ (3./2.)*(1.-CP%omegav)*(1+initial_z)**3.,xi_dhost/sqrt((1-CP%omegav)*(1+initial_z)**3.) /) 
 !      x = (/ (2./3.)*(1+initial_z)**3., xi_dhost/((2./3.)*(1+initial_z)**(3./2.)) /) !these are the ones in the paper
 
       if (debugging) then
@@ -128,7 +128,7 @@ subroutine deinterface(CP)
          open(42, file='test_H.dat')
          do i=1,nsteps
             write(656,*) z_ode(i), sol1(i), sol2(i)
-            write(747,*) z_ode(i), sol1(i)*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))*(1./3.), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
+            write(747,*) z_ode(i), sol1(i)*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))*(2./3.), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
             write(42,*) z_ode(i),solH(i)*(1+z_ode(i))
          end do
          close(656)
