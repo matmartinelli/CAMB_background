@@ -9,7 +9,7 @@ implicit none
 !global variable for solver
 real(dl)                           :: initial_z                   !starting scale factor for ODE
 real(dl)                           :: final_z                     !final scale factor for ODE
-integer                            :: nsteps    = 100000           !number of ODE integration steps
+integer                            :: nsteps    = 10000           !number of ODE integration steps
 real(dl), dimension(:),allocatable :: z_ode,sol1, sol2, solH      !rhoDE(z) and H(z)
 real(dl), dimension(:),allocatable :: tempz, temp1, temp2, temp3  !temporary arrays
 real(dl), dimension(:),allocatable :: b1, c1, d1, b2, c2, d2      !coefficient of polynomial for interpolation
@@ -52,6 +52,7 @@ subroutine deinterface(CP)
       real(dl)                :: debug_q
       real(dl)                :: zp, zm, dz, fplus, fminus, integral
       real(dl)                :: xi_dhost
+      real(dl)                :: aini, a0
 
 
 
@@ -71,25 +72,24 @@ subroutine deinterface(CP)
       xi_dhost = (6*CP%c3_dhost-2.*sqrt(9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost))/(9*CP%beta_dhost+48*CP%c4_dhost)
       if (debugging) write(*,*) 'xi_dhost=',xi_dhost
 
-      !Initial conditions for x(0) and x(1). TO BE CHECKED
-      x = (/ (3./2.)*(1.-CP%omegav)*(1+initial_z)**3.,xi_dhost/sqrt((1-CP%omegav)*(1+initial_z)**3.) /) 
-!      x = (/ (2./3.)*(1+initial_z)**3., xi_dhost/((2./3.)*(1+initial_z)**(3./2.)) /) !these are the ones in the paper
+      !Initial conditions for x(0) and x(1). 
+      a0   = 4./(9.*(1.-CP%omegav))
+      aini = 1/(1+initial_z)
+      x = (/ 6.*(1.-CP%omegav)*(aini)**(-3.),xi_dhost/sqrt((1-CP%omegav)*(aini/a0)**(-3.)) /)
 
       if (debugging) then
          write(*,*) '----------------------------------------------'
          write(*,*) 'initial conditions at redshift=',initial_z
          write(*,*) 'rho_m=',x(0)
-         write(*,*) 'psi_dot=',x(1)
+         write(*,*) 'psi=',x(1)
          write(*,*) '----------------------------------------------'
       end if
-!      x = (/ 3*(1-CP%omegav)*((1+initial_z)**3._dl), 0.00379_dl /)
-!      x = (/ (2./3.)*(1+initial_z)**3., xi_dhost/((2./3.)*(1+initial_z)**(3./2.)) /)
-      h = (final_z - initial_z)/(nsteps-1)                         !step size for runge-kutta
+      h = (final_z - initial_z)/(nsteps)                         !step size for runge-kutta
 
       call rk4sys(CP,n,h,x)
 
       if (debugging) write(*,*) "-------------------------------"
-      if (debugging) write(*,*) "solution done: computed psi'(z)"
+      if (debugging) write(*,*) "solution done: computed psi(z) "
       if (debugging) write(*,*) "-------------------------------"
 
       !inverting order: interpolation routine works with (x,y) table
@@ -107,33 +107,38 @@ subroutine deinterface(CP)
          sol2(:)    = temp2(:)
          solH(:)    = temp3(:)
       end if
-!      solH(:) = sqrt(3.)*solH(:)
+      solH(:) = CP%H0*solH(:) !Make H with units again
+      sol1(:) = sol1(:)/2._dl !Fix the missing 2 in the equations
       deallocate(tempz,temp1,temp2,temp3)
-
-      if (debugging) write(*,*) 'computed H(z)'
-      if (debugging) write(*,*) 'H(z=',z_ode(1),')',solH(1)
-      if (debugging) write(*,*) 'H0    =',CP%H0
-
-
 
       !getting everything ready to interpolate
       call newspline(z_ode, sol1, b1, c1, d1, nsteps)
       call newspline(z_ode, sol2, b2, c2, d2, nsteps)
       call newspline(z_ode, solH, bh, ch, dh, nsteps)
 
+      
+      if (debugging) write(*,*) 'checking obtained parameters at z=0'
+      if (debugging) write(*,*) 'H(z=0) =',ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)
+      if (debugging) write(*,*) 'H0     =',CP%H0
+      if (debugging) write(*,*) 'Om(z=0)=',(1./3.)*ispline(0._dl, z_ode, sol1, b1, c1, d1, nsteps)
+      if (debugging) write(*,*) 'Om     =',(1-CP%omegav)
+
 
       if (debugging) then
-         open(656, file='test_solution.dat') !just prints the solutions to the eq.diff.: col1=z, col2=rhom, col3=psi
+         open(656, file='test_modomega.dat') !just prints the solutions to the eq.diff.: col1=z, col2=rhom, col3=psi
          open(747, file='test_standard.dat') !prints standard evolution Omega_i(z) using rhom
+         open(666, file='test_psi.dat')
          open(42, file='test_H.dat')
          do i=1,nsteps
-            write(656,*) z_ode(i), sol1(i), sol2(i)
-            write(747,*) z_ode(i), sol1(i)*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))*(2./3.), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
-            write(42,*) z_ode(i),solH(i)*(1+z_ode(i))
+            write(656,*) z_ode(i), (1./3.)*sol1(i)/(solH(i)*(1+z_ode(i)))**2., CP%omegav/(solH(i)*(1+z_ode(i)))**2.
+            write(666,*) z_ode(i), sol2(i)
+            write(747,*) z_ode(i), (1./3.)*sol1(i)*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
+            write(42,*) z_ode(i),solH(i)*(1+z_ode(i)), CP%H0*sqrt((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)
          end do
          close(656)
          close(747)
          close(42)
+         close(666)
          stop
       end if
 
@@ -168,7 +173,7 @@ subroutine xpsys(CP,n,k,h,x,f)
 
 
       !Gets redshift for this step
-      redshift = initial_z + (k-1)*h
+      redshift = initial_z + (k)*h
 
       !Equations are insane, thus I compute the r.h.s. in a separate routine
       !to make things less messy
@@ -215,9 +220,9 @@ in4:    do i = 0,n
         end do in4
 !        print *, k, x
         !storing functions at each step
-        z_ode(k+1) = initial_z + k*h
-        sol1(k+1)  = x(0)
-        sol2(k+1)  = x(1)
+        z_ode(k) = initial_z + k*h
+        sol1(k)  = x(0)
+        sol2(k)  = x(1)
       end do out
 end subroutine rk4sys
 
