@@ -74,7 +74,6 @@ subroutine deinterface(CP)
 
       !Initial conditions for x(0) and x(1). TO BE CHECKED
       x = (/ 3.*CP%H0**2.*(1.-CP%omegav)*(1+initial_z)**3.,xi_dhost*(1+initial_z)/sqrt((CP%H0)**2.*(1-CP%omegav)*(1+initial_z)**3.) /) 
-!      x = (/ (2./3.)*(1+initial_z)**3., xi_dhost/((2./3.)*(1+initial_z)**(3./2.)) /) !these are the ones in the paper
 
       if (debugging) then
          write(*,*) '----------------------------------------------'
@@ -83,8 +82,7 @@ subroutine deinterface(CP)
          write(*,*) 'psi_dot=',x(1)
          write(*,*) '----------------------------------------------'
       end if
-!      x = (/ 3*(1-CP%omegav)*((1+initial_z)**3._dl), 0.00379_dl /)
-!      x = (/ (2./3.)*(1+initial_z)**3., xi_dhost/((2./3.)*(1+initial_z)**(3./2.)) /)
+
       h = (final_z - initial_z)/(nsteps-1)                         !step size for runge-kutta
 
       call rk4sys(CP,n,h,x)
@@ -108,6 +106,8 @@ subroutine deinterface(CP)
          sol2(:)    = temp2(:)
          solH(:)    = temp3(:)
       end if
+
+      solH(:) = solH(:)*(1+z_ode(:))
       deallocate(tempz,temp1,temp2,temp3)
 
 
@@ -123,17 +123,21 @@ subroutine deinterface(CP)
 
 
       if (debugging) then
-         open(656, file='test_solution.dat') !just prints the solutions to the eq.diff.: col1=z, col2=rhom, col3=psi
+         open(656, file='test_modomega.dat') !just prints the solutions to the eq.diff.: col1=z, col2=rhom, col3=psi
          open(747, file='test_standard.dat') !prints standard evolution Omega_i(z) using rhom
+         open(666, file='test_psi.dat')
          open(42, file='test_H.dat')
          do i=1,nsteps
-            write(656,*) z_ode(i), sol1(i), sol2(i)
-            write(747,*) z_ode(i), sol1(i)*(1./(3.*CP%H0**2.))*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
-            write(42,*) z_ode(i),solH(i)*(1+z_ode(i)), CP%H0*sqrt((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)
+            !write(656,*) z_ode(i), (1./3.)*sol1(i)/((2.*solH(i))**2.), CP%omegav*CP%H0**2./(2*solH(i))**2.
+            write(656,*) z_ode(i), (1./3.)*sol1(i)/(solH(i)**2.), CP%omegav*CP%H0**2./(solH(i))**2.
+            write(666,*) z_ode(i), sol1(i), sol2(i)
+            write(747,*) z_ode(i), (1./(3.*CP%H0**2.))*sol1(i)*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
+            write(42,*) z_ode(i),solH(i), CP%H0*sqrt((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)
          end do
          close(656)
          close(747)
          close(42)
+         close(666)
          stop
       end if
 
