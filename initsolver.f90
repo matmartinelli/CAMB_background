@@ -383,137 +383,85 @@ rhom = x(0)!3*(1-CP%omegav)*(1+z)**3. !This is the adimensional rho_m(z)
 
 
 !Equations coming from notebook
-hubble = (2*(6*CP%c3_dhost*Mplanck*x(1)**3*(CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
-     &      Sqrt(3.)*Sqrt(-(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &           (CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 +&
-     &                (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8) - &
-     &             2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &              (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom))))))/&
-     &  (3.*(1 + z)*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &    (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &    (2*CP%H0**4*Mplanck**4 + 4*CP%c4_dhost*x(1)**4 + &
-     &      (6*CP%beta_dhost*x(1)**4*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &         (-6*CP%c3_dhost*x(1)*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &            (12*CP%c3_dhost**2*Mplanck*x(1)**6*(CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
-     &              Mplanck*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &               (CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*rhom + &
-     &              2*Sqrt(3.)*CP%c3_dhost*x(1)**3*Sqrt(CP%H0**4*Mplanck**2*&
-     &                 (CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &                 (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                        12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                        (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &                   2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &                    (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom)))) + &
-     &           CP%c2_dhost*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &            (6*CP%c3_dhost*Mplanck*x(1)**3*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*&
-     &               (CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
-     &              Sqrt(3.)*(2*CP%H0**4*Mplanck**4 + 3*(CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*&
-     &               Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &                 (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                        12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                        (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &                   2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &                    (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom))))))/&
-     &       (2*CP%c2_dhost*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &          (6*CP%c3_dhost*CP%H0**2*Mplanck*x(1)**3*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &             (12*CP%H0**12*Mplanck**12 + 4*(3*CP%beta_dhost - 10*CP%c4_dhost)*CP%H0**8*Mplanck**8*x(1)**4 - &
-     &               3*(3*CP%beta_dhost**2 + 16*CP%c4_dhost**2)*CP%H0**4*Mplanck**4*x(1)**8 + &
+hubble = (2*(6*CP%c3_dhost*x(1)**3*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
+     &      Sqrt(3.)*Sqrt(-(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &           (CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8) - &
+     &             2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0)))))))/&
+     &  (3.*(1 + z)*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
+     &    (2*CP%H0**4 + 4*CP%c4_dhost*x(1)**4 + (6*CP%beta_dhost*x(1)**4*(2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
+     &         (-6*CP%c3_dhost*x(1)*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*&
+     &            (12*CP%c3_dhost**2*x(1)**6*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
+     &              (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*x(0) + &
+     &              2*Sqrt(3.)*CP%c3_dhost*x(1)**3*Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &                 (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &                   2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0))))) + &
+     &           CP%c2_dhost*(2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
+     &            (6*CP%c3_dhost*x(1)**3*(2*CP%H0**4 + (3*CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
+     &              Sqrt(3.)*(2*CP%H0**4 + 3*(CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*&
+     &               Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &                 (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &                   2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0)))))))/&
+     &       (2*CP%c2_dhost*(2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
+     &          (6*CP%c3_dhost*CP%H0**2*x(1)**3*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*&
+     &             (12*CP%H0**12 + 4*(3*CP%beta_dhost - 10*CP%c4_dhost)*CP%H0**8*x(1)**4 - 3*(3*CP%beta_dhost**2 + 16*CP%c4_dhost**2)*CP%H0**4*x(1)**8 + &
      &               2*CP%c4_dhost*(9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**12) + &
-     &            Sqrt(3.)*(4*CP%H0**8*Mplanck**8 + 12*CP%beta_dhost*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &               3*(3*CP%beta_dhost**2 + 32*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)*&
-     &             Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &               (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                      12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                      (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &                 2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &                  (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom)))) + &
-     &         x(1)*(-144*CP%c3_dhost**3*Mplanck*x(1)**6*(CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*&
-     &             (10*CP%H0**8*Mplanck**8 - 3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &               2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8) - &
-     &            96*CP%c3_dhost*CP%H0**6*Mplanck**5*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**2*&
-     &             (2*CP%H0**8*Mplanck**8 - (3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 - &
-     &               (9*CP%beta_dhost**2 + 102*CP%beta_dhost*CP%c4_dhost + 280*CP%c4_dhost**2)*x(1)**8)*rhom -& 
-     &            24*Sqrt(3.)*CP%c3_dhost**2*x(1)**3*(10*CP%H0**8*Mplanck**8 - &
-     &               3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + 2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8)*&
-     &              Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &               (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                      12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                      (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &                 2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &                  (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom))) + &
-     &            Sqrt(3.)*x(1)*(12*(3*CP%beta_dhost + 16*CP%c4_dhost)*CP%H0**8*Mplanck**8 + &
-     &               4*(9*CP%beta_dhost**2 + 108*CP%beta_dhost*CP%c4_dhost + 320*CP%c4_dhost**2)*CP%H0**4*Mplanck**4*x(1)**4 - &
-     &               (3*CP%beta_dhost + 16*CP%c4_dhost)*(3*CP%beta_dhost + 20*CP%c4_dhost)**2*x(1)**8)*rhom*&
-     &             Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &               (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                      12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                      (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &                 2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &                  (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom)))))))
-
+     &            Sqrt(3.)*(4*CP%H0**8 + 12*CP%beta_dhost*CP%H0**4*x(1)**4 + 3*(3*CP%beta_dhost**2 + 32*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)*&
+     &             Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &               (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &                 2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0))))) + &
+     &         x(1)*(-144*CP%c3_dhost**3*x(1)**6*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*&
+     &             (10*CP%H0**8 - 3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*x(1)**4 + 2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8) - &
+     &            96*CP%c3_dhost*CP%H0**6*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**2*&
+     &             (2*CP%H0**8 - (3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*x(1)**4 - (9*CP%beta_dhost**2 + 102*CP%beta_dhost*CP%c4_dhost + 280*CP%c4_dhost**2)*x(1)**8)*x(0) - &
+     &            24*Sqrt(3.)*CP%c3_dhost**2*x(1)**3*(10*CP%H0**8 - 3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*x(1)**4 + 2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8)*&
+     &             Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &               (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &                 2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0)))) + &
+     &            Sqrt(3.)*x(1)*(12*(3*CP%beta_dhost + 16*CP%c4_dhost)*CP%H0**8 + 4*(9*CP%beta_dhost**2 + 108*CP%beta_dhost*CP%c4_dhost + 320*CP%c4_dhost**2)*CP%H0**4*x(1)**4 - &
+     &               (3*CP%beta_dhost + 16*CP%c4_dhost)*(3*CP%beta_dhost + 20*CP%c4_dhost)**2*x(1)**8)*x(0)*&
+     &             Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &               (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &                 2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0))))))))
 
 
 derivative1 = 3._dl*x(0)/(1+z)
 
-derivative2 =  (6*x(1)*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &    (-6*CP%c3_dhost*x(1)*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &       (12*CP%c3_dhost**2*Mplanck*x(1)**6*(CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
-     &         Mplanck*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &          (CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*rhom + &
-     &         2*Sqrt(3.)*CP%c3_dhost*x(1)**3*Sqrt(CP%H0**4*Mplanck**2*&
-     &            (CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                   12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                   (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &              2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &               (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom)))) + &
-     &      CP%c2_dhost*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &       (6*CP%c3_dhost*Mplanck*x(1)**3*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*&
-     &          (CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
-     &         Sqrt(3.)*(2*CP%H0**4*Mplanck**4 + 3*(CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*&
-     &          Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                   12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                   (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &              2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &               (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom))))))/&
-     &  ((1 + z)*(2*CP%c2_dhost*(2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
-     &       (6*CP%c3_dhost*CP%H0**2*Mplanck*x(1)**3*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &          (12*CP%H0**12*Mplanck**12 + 4*(3*CP%beta_dhost - 10*CP%c4_dhost)*CP%H0**8*Mplanck**8*x(1)**4 - &
-     &            3*(3*CP%beta_dhost**2 + 16*CP%c4_dhost**2)*CP%H0**4*Mplanck**4*x(1)**8 + &
+derivative2 = (6*x(1)*(2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*(-6*CP%c3_dhost*x(1)*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*&
+     &       (12*CP%c3_dhost**2*x(1)**6*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
+     &         (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*x(0) + &
+     &         2*Sqrt(3.)*CP%c3_dhost*x(1)**3*Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &              2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0))))) + &
+     &      CP%c2_dhost*(2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
+     &       (6*CP%c3_dhost*x(1)**3*(2*CP%H0**4 + (3*CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2 + &
+     &         Sqrt(3.)*(2*CP%H0**4 + 3*(CP%beta_dhost + 4*CP%c4_dhost)*x(1)**4)*&
+     &          Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &              2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0)))))))/&
+     &  ((1 + z)*(2*CP%c2_dhost*(2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*&
+     &       (6*CP%c3_dhost*CP%H0**2*x(1)**3*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*&
+     &          (12*CP%H0**12 + 4*(3*CP%beta_dhost - 10*CP%c4_dhost)*CP%H0**8*x(1)**4 - 3*(3*CP%beta_dhost**2 + 16*CP%c4_dhost**2)*CP%H0**4*x(1)**8 + &
      &            2*CP%c4_dhost*(9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**12) + &
-     &         Sqrt(3.)*(4*CP%H0**8*Mplanck**8 + 12*CP%beta_dhost*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &            3*(3*CP%beta_dhost**2 + 32*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)*&
-     &          Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                   12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                   (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &              2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &               (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom)))) + &
-     &      x(1)*(-144*CP%c3_dhost**3*Mplanck*x(1)**6*(CP%H0**5*Mplanck**4 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*&
-     &          (10*CP%H0**8*Mplanck**8 - 3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &            2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8) - &
-     &         96*CP%c3_dhost*CP%H0**6*Mplanck**5*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**2*&
-     &          (2*CP%H0**8*Mplanck**8 - (3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 - &
-     &            (9*CP%beta_dhost**2 + 102*CP%beta_dhost*CP%c4_dhost + 280*CP%c4_dhost**2)*x(1)**8)*rhom - &
-     &         24*Sqrt(3.)*CP%c3_dhost**2*x(1)**3*(10*CP%H0**8*Mplanck**8 - &
-     &            3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + 2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8)*&
-     &          Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                   12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                   (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &              2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &               (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom))) + &
-     &         Sqrt(3.)*x(1)*(12*(3*CP%beta_dhost + 16*CP%c4_dhost)*CP%H0**8*Mplanck**8 + &
-     &            4*(9*CP%beta_dhost**2 + 108*CP%beta_dhost*CP%c4_dhost + 320*CP%c4_dhost**2)*CP%H0**4*Mplanck**4*x(1)**4 - &
-     &            (3*CP%beta_dhost + 16*CP%c4_dhost)*(3*CP%beta_dhost + 20*CP%c4_dhost)**2*x(1)**8)*rhom*&
-     &          Sqrt(CP%H0**4*Mplanck**2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)**3*&
-     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8*Mplanck**8 + &
-     &                   12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*Mplanck**4*x(1)**4 + &
-     &                   (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
-     &              2*(CP%H0**4*Mplanck**4 + 2*CP%c4_dhost*x(1)**4)*&
-     &               (6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4*Mplanck**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom))))))
+     &         Sqrt(3.)*(4*CP%H0**8 + 12*CP%beta_dhost*CP%H0**4*x(1)**4 + 3*(3*CP%beta_dhost**2 + 32*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)*&
+     &          Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &              2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0))))) + &
+     &      x(1)*(-144*CP%c3_dhost**3*x(1)**6*(CP%H0**5 + 2*CP%c4_dhost*CP%H0*x(1)**4)**2*&
+     &          (10*CP%H0**8 - 3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*x(1)**4 + 2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8) - &
+     &         96*CP%c3_dhost*CP%H0**6*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**2*&
+     &          (2*CP%H0**8 - (3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*x(1)**4 - (9*CP%beta_dhost**2 + 102*CP%beta_dhost*CP%c4_dhost + 280*CP%c4_dhost**2)*x(1)**8)*x(0) - &
+     &         24*Sqrt(3.)*CP%c3_dhost**2*x(1)**3*(10*CP%H0**8 - 3*(3*CP%beta_dhost + 8*CP%c4_dhost)*CP%H0**4*x(1)**4 + 2*CP%c4_dhost*(3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**8)*&
+     &          Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &              2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0)))) + &
+     &         Sqrt(3.)*x(1)*(12*(3*CP%beta_dhost + 16*CP%c4_dhost)*CP%H0**8 + 4*(9*CP%beta_dhost**2 + 108*CP%beta_dhost*CP%c4_dhost + 320*CP%c4_dhost**2)*CP%H0**4*x(1)**4 - &
+     &            (3*CP%beta_dhost + 16*CP%c4_dhost)*(3*CP%beta_dhost + 20*CP%c4_dhost)**2*x(1)**8)*x(0)*&
+     &          Sqrt(CP%H0**4*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)**3*&
+     &            (-(CP%c2_dhost*x(1)**2*(4*CP%H0**8 + 12*(CP%beta_dhost + 4*CP%c4_dhost)*CP%H0**4*x(1)**4 + (9*CP%beta_dhost**2 + 72*CP%beta_dhost*CP%c4_dhost + 80*CP%c4_dhost**2)*x(1)**8)) + &
+     &              2*(CP%H0**4 + 2*CP%c4_dhost*x(1)**4)*(6*CP%c3_dhost**2*x(1)**6 + (2*CP%H0**4 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*x(0)))))))
 
+
+write(456,*) z, derivative2
 
 
 end subroutine get_derivative
