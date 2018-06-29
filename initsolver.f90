@@ -108,7 +108,7 @@ subroutine deinterface(CP)
          solH(:)    = temp3(:)
       end if
       solH(:) = CP%H0*solH(:) !Make H with units again
-      sol1(:) = sol1(:)/2._dl !Fix the missing 2 in the equations
+      sol1(:) = sol1(:)*2._dl !Fix the missing 2 in the equations
       deallocate(tempz,temp1,temp2,temp3)
 
       !getting everything ready to interpolate
