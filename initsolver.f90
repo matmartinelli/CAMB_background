@@ -75,7 +75,7 @@ subroutine deinterface(CP)
       !Initial conditions for x(0) and x(1). 
       a0   = 4./(9.*(1.-CP%omegav))
       aini = 1/(1+initial_z)
-      x = (/ 6.*(1.-CP%omegav)*(aini)**(-3.),xi_dhost/sqrt((1-CP%omegav)*(aini/a0)**(-3.)) /)
+      x = (/ (3./2.)*(1.-CP%omegav)*(aini)**(-3.),xi_dhost/sqrt((1-CP%omegav)*(aini)**(-3.)) /)
 
       if (debugging) then
          write(*,*) '----------------------------------------------'
