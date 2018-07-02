@@ -208,6 +208,11 @@
     subroutine init_background
     use LambdaGeneral
     use initsolver !MMmod: DHOST
+    integer :: iter
+    integer, parameter :: maxiter = 10000
+    real(dl) :: step, diff, diffp, diffm
+    real(dl), parameter :: mintol=0.01
+    logical, parameter :: minimizeme = .true.
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
@@ -215,8 +220,36 @@
 
     !MMmod: DHOST
     !calling ODE solver for DHOST background
-    call deinterface(CP)
+    if (minimizeme) then
+       step = 0.1_dl
+       write(*,*) 'starting beta=',CP%beta_dhost
+       do iter=1,maxiter
+          call deinterface(CP,diff)
+          if (diff.le.mintol) then
+             write(*,*) 'WE FUCKING MADE IT'
+             write(*,*) 'diff=',diff
+             exit
+          else 
+             CP%beta_dhost = CP%beta_dhost+step
+             call deinterface(CP,diffp)
+             if (diffp.gt.diff) then
+                CP%beta_dhost = CP%beta_dhost - 2*step
+                call deinterface(CP,diffm)
+                if (diffm.gt.diff) then
+                   write(*,*) 'both sides give higher diff, reducing step'
+                   CP%beta_dhost = CP%beta_dhost+step
+                   step = step/2._dl
+                end if
+             end if
+          end if
+          write(*,*) 'Nstep=',iter
+          write(*,*) 'new beta=', CP%beta_dhost
 
+       end do
+    else
+       call deinterface(CP,diff)
+    end if
+stop
 
     end  subroutine init_background
 

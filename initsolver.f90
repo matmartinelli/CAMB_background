@@ -40,7 +40,7 @@ end if
 
 end subroutine getH
 
-subroutine deinterface(CP)
+subroutine deinterface(CP,diff)
       Type(CAMBparams) CP
       integer, parameter      :: n = 1                          !number of dependent variables (-1)
       real, dimension(0:n)    :: x                              !dependent variables: rho_m, rho_v
@@ -53,6 +53,7 @@ subroutine deinterface(CP)
       real(dl)                :: zp, zm, dz, fplus, fminus, integral
       real(dl)                :: xi_dhost
       real(dl)                :: aini, a0
+      real(dl)                :: diff
 
 
 
@@ -107,14 +108,16 @@ subroutine deinterface(CP)
          sol2(:)    = temp2(:)
          solH(:)    = temp3(:)
       end if
-      solH(:) = CP%H0*solH(:) !Make H with units again
-      sol1(:) = sol1(:)*2._dl !Fix the missing 2 in the equations
+      solH(:) = CP%H0*solH(:)*(1+z_ode(:)) !Make H with units again, and make it cosmic
+      sol1(:) = sol1(:)*2._dl              !Fix the missing 2 in the equations
       deallocate(tempz,temp1,temp2,temp3)
 
       !getting everything ready to interpolate
       call newspline(z_ode, sol1, b1, c1, d1, nsteps)
       call newspline(z_ode, sol2, b2, c2, d2, nsteps)
       call newspline(z_ode, solH, bh, ch, dh, nsteps)
+
+      diff = abs(CP%H0-ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps))
 
       
       if (debugging) write(*,*) 'checking obtained parameters at z=0'
@@ -130,16 +133,16 @@ subroutine deinterface(CP)
          open(666, file='test_psi.dat')
          open(42, file='test_H.dat')
          do i=1,nsteps
-            write(656,*) z_ode(i), (1./3.)*sol1(i)/(solH(i)*(1+z_ode(i)))**2., CP%omegav/(solH(i)*(1+z_ode(i)))**2.
+            write(656,*) z_ode(i), (1./3.)*sol1(i)*(CP%H0/solH(i))**2., CP%omegav*(CP%H0/solH(i))**2.
             write(666,*) z_ode(i), sol2(i)
             write(747,*) z_ode(i), (1./3.)*sol1(i)*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
-            write(42,*) z_ode(i),solH(i)*(1+z_ode(i)), CP%H0*sqrt((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)
+            write(42,*) z_ode(i),solH(i), CP%H0*sqrt((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)
          end do
          close(656)
          close(747)
          close(42)
          close(666)
-         stop
+!         stop
       end if
 
 
