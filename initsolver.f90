@@ -15,7 +15,7 @@ real(dl), dimension(:),allocatable :: tempz, temp1, temp2, temp3  !temporary arr
 real(dl), dimension(:),allocatable :: b1, c1, d1, b2, c2, d2      !coefficient of polynomial for interpolation
 real(dl), dimension(:),allocatable :: bh, ch, dh
 
-logical                            :: debugging = .true.         !if T prints some files to check solver
+logical                            :: debugging = .false.         !if T prints some files to check solver
 
 
 

@@ -41,7 +41,10 @@
     real(dl), parameter :: amin = 1.d-9
     logical :: is_cosmological_constant
     private nde,ddw_ppf,rde,ade,ddrde,amin
-
+    !MMmod: DHOST------------------------------
+    logical             :: minimizeme         !flag to activate DHOST minimization
+    real(dl)            :: minstep            !starting stepsize of the minimizer (in percentage of the varied parameter)
+    !------------------------------------------
     contains
 
     subroutine DarkEnergy_ReadParams(Ini)
@@ -49,6 +52,12 @@
     Type(TIniFile) :: Ini
     character(LEN=Ini_max_string_len) wafile
     integer i
+
+    !MMmod: DHOST---------------------------------
+    !reading flags and options for DHOST minimizer
+    minimizeme = Ini_Read_Logical_File(Ini,'minimize_DHOST',.false.)
+    if (minimizeme) minstep = Ini_Read_Double_File(Ini,'minimizer_step')
+    !---------------------------------------------
 
     if (Ini_HasKey_File(Ini,'usew0wa')) then
         stop 'input variables changed from usew0wa: now use_tabulated_w or w, wa'
@@ -207,27 +216,46 @@
 
     subroutine init_background
     use LambdaGeneral
-    use initsolver !MMmod: DHOST
-    integer :: iter
-    integer, parameter :: maxiter = 10000
-    real(dl) :: step, diff, diffp, diffm
-    real(dl), parameter :: mintol=0.01
-    logical, parameter :: minimizeme = .true.
+    !MMmod: DHOST---------------------------------------------------------
+    use initsolver 
+    !MINIMIZATION PARAMETERS:
+    !This part is needed to get the modified DHOST background to obtain the 
+    !same H0 we input from CAMB 
+    integer             :: iter               !iteration index
+    integer, parameter  :: maxiter = 10000    !maximum number of minimizer iterations
+    real(dl), parameter :: mintol=0.01        !tolerance on the final difference
+    real(dl)            :: diff, diffp, diffm !working variables
+    real(dl)            :: time1, time2       !variables for time computation
+    real(dl)            :: step            !stepsize of the minimizer (absolute value)
+    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
+
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
     is_cosmological_constant = .not. use_tabulated_w .and. w_lam==-1_dl .and. wa_ppf==0._dl
 
-    !MMmod: DHOST
     !calling ODE solver for DHOST background
     if (minimizeme) then
-       step = 0.1_dl
-       write(*,*) 'starting beta=',CP%beta_dhost
+       step = CP%beta_dhost*minstep
+
+       if (mindebug) write(*,*) '-------STARTING MINIMIZATION!-------'
+       if (mindebug) write(*,*) 'starting beta                      =',CP%beta_dhost
+       if (mindebug) write(*,*) 'starting step                      =',step
+       if (mindebug) write(*,*) 'tolerance                          =',mintol
+       if (mindebug) write(*,*) 'max iterations                     =',maxiter
+       if (mindebug) write(*,*) '------------------------------------'
+       call cpu_time(time1)
        do iter=1,maxiter
           call deinterface(CP,diff)
           if (diff.le.mintol) then
-             write(*,*) 'WE FUCKING MADE IT'
-             write(*,*) 'diff=',diff
+             call cpu_time(time2)
+             if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
+             if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
+             if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
+             if (mindebug) write(*,*) 'final step                      =',step
+             if (mindebug) write(*,*) 'number of iterations needed     =',iter
+             if (mindebug) write(*,*) 'elapsed time (seconds)          =',time2-time1
+             if (mindebug) write(*,*) '---------------------------------'
              exit
           else 
              CP%beta_dhost = CP%beta_dhost+step
@@ -236,20 +264,19 @@
                 CP%beta_dhost = CP%beta_dhost - 2*step
                 call deinterface(CP,diffm)
                 if (diffm.gt.diff) then
-                   write(*,*) 'both sides give higher diff, reducing step'
+                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step'
                    CP%beta_dhost = CP%beta_dhost+step
                    step = step/2._dl
                 end if
              end if
           end if
-          write(*,*) 'Nstep=',iter
-          write(*,*) 'new beta=', CP%beta_dhost
 
        end do
     else
        call deinterface(CP,diff)
     end if
 stop
+    !-------------------------------------------------------------------
 
     end  subroutine init_background
 
