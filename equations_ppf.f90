@@ -226,7 +226,8 @@
     real(dl), parameter :: mintol=0.01        !tolerance on the final difference
     real(dl)            :: diff, diffp, diffm !working variables
     real(dl)            :: time1, time2       !variables for time computation
-    real(dl)            :: step            !stepsize of the minimizer (absolute value)
+    real(dl)            :: step               !stepsize of the minimizer (absolute value)
+    real(dl)            :: finalhubble        !H(z=0) after minizer
     logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
 
     !This is only called once per model, and is a good point to do any extra initialization.
@@ -248,8 +249,11 @@
        do iter=1,maxiter
           call deinterface(CP,diff)
           if (diff.le.mintol) then
+             call getH(1._dl,finalhubble)
              call cpu_time(time2)
              if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
+             if (mindebug) write(*,*) 'input H0                        =',CP%H0
+             if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
              if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
              if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
              if (mindebug) write(*,*) 'final step                      =',step
