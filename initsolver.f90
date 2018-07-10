@@ -32,11 +32,7 @@ real(dl) :: xi_dhost
 
 z=-1+1/a
 
-if ((z.ge.initial_z).and.(z.le.final_z)) then
-   out_hubble = ispline(z, z_ode, solH, bh, ch, dh, nsteps)
-else
-   out_hubble = ispline(final_z, z_ode, solH, bh, ch, dh, nsteps)
-end if
+out_hubble = ispline(z, z_ode, solH, bh, ch, dh, nsteps)
 
 end subroutine getH
 
@@ -70,6 +66,11 @@ subroutine deinterface(CP,diff)
 
 
       !setting initial conditions for rho_c and rho_v at z=0
+      if (9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost.lt.0._dl) then
+         write(*,*) 'COMPLEX INITIAL CONDITION!!!'
+         stop
+      end if
+
       xi_dhost = (6*CP%c3_dhost-2.*sqrt(9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost))/(9*CP%beta_dhost+48*CP%c4_dhost)
       if (debugging) write(*,*) 'xi_dhost=',xi_dhost
 
@@ -142,7 +143,7 @@ subroutine deinterface(CP,diff)
          close(747)
          close(42)
          close(666)
-!         stop
+         stop
       end if
 
 

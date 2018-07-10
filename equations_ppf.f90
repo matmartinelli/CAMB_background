@@ -230,6 +230,10 @@
     real(dl)            :: finalhubble        !H(z=0) after minizer
     logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
 
+    real(dl) debug_a, debug_H
+    integer :: debug_i
+    real(dl) dtauda    
+
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
@@ -279,7 +283,16 @@
     else
        call deinterface(CP,diff)
     end if
-stop
+
+    open(42,file='dtauda.dat')
+    do debug_i=1,10000
+       debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
+       call getH(debug_a,debug_H)
+       write(42,*) -1+1/debug_a, dtauda(debug_a)
+    end do
+    close(42)
+    stop
+
     !-------------------------------------------------------------------
 
     end  subroutine init_background
@@ -289,6 +302,7 @@ stop
     function dtauda(a)
     !get d tau / d a
     use precision
+    use constants !MMmod: DHOST
     use ModelParams
     use MassiveNu
     use LambdaGeneral
@@ -304,13 +318,11 @@ stop
 
     !  8*pi*G*rho*a**4.
     grhoa2=grhok*a2+(grhoc+grhob)*a+grhog+grhornomass
-!MMmod: DHOST-------------------------
     if (is_cosmological_constant) then
         grhoa2=grhoa2+grhov*a2**2
     else
         grhoa2=grhoa2+ grho_de(a)
     end if
-!-------------------------------------
 
     if (CP%Num_Nu_massive /= 0) then
         !Get massive neutrino density relative to massless
@@ -320,9 +332,16 @@ stop
         end do
     end if
 
-!    dtauda=sqrt(3/grhoa2)
-    call getH(a,myhubble)
-    dtauda = a/myhubble
+    !MMmod: DHOST----------------------------------
+    if (a.lt.1/(1+CP%inired)) then
+       dtauda=sqrt(3/grhoa2)
+    else
+       call getH(a,myhubble)
+       !myhubble is cosmic and in km/Mpc/s units
+       !converted here to be consistent with dtauda
+       dtauda = 1/(a**2._dl*myhubble*1.e3/c)
+    end if
+    !----------------------------------------------
 
     end function dtauda
 
