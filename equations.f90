@@ -45,8 +45,8 @@
 
     !MMmod: DHOST---------------------------------
     !reading flags and options for DHOST minimizer
-    minimizeme = Ini_Read_Logical_File(Ini,'minimize_DHOST',.false.)
-    if (minimizeme) minstep = Ini_Read_Double_File(Ini,'minimizer_step')
+    minimizeme = Ini_Read_Logical_File(Ini,'minimize_DHOST',.true.)
+    if (minimizeme) minstep = Ini_Read_Double_File(Ini,'minimizer_step',0.1_dl)
     !---------------------------------------------
 
 

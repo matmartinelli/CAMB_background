@@ -304,6 +304,7 @@ class CAMBparams(CAMB_Structure):
     def set_cosmology(self, H0=67.0, cosmomc_theta=None, ombh2=0.022, omch2=0.12, omk=0.0,
                       neutrino_hierarchy='degenerate', num_massive_neutrinos=1,
                       mnu=0.06, nnu=3.046, YHe=None, meffsterile=0.0, standard_neutrino_neff=3.046,
+                      c2_dhost=3.0, c3_dhost=5, c4_dhost=1, beta_dhost=-5.3, #MMmod: DHOST parameters
                       TCMB=constants.COBE_CMBTemp, tau=None, deltazrei=None, bbn_predictor=None,
                       theta_H0_range=[10, 100]):
         """
