@@ -230,6 +230,7 @@
     real(dl)            :: finalhubble        !H(z=0) after minizer
     logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
 
+    !Some debug stuff
     real(dl) debug_a, debug_H
     integer :: debug_i
     real(dl) dtauda    
@@ -237,7 +238,8 @@
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
-    is_cosmological_constant = .not. use_tabulated_w .and. w_lam==-1_dl .and. wa_ppf==0._dl
+    is_cosmological_constant = .not. use_tabulated_w .and. w_lam==-1_dl .and. wa_ppf==0._dl 
+    !MMtemp: this will need to be changed when we include perturbations
 
     !calling ODE solver for DHOST background
     if (minimizeme) then
@@ -284,14 +286,15 @@
        call deinterface(CP,diff)
     end if
 
-    open(42,file='dtauda.dat')
-    do debug_i=1,10000
-       debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
-       call getH(debug_a,debug_H)
-       write(42,*) -1+1/debug_a, dtauda(debug_a)
-    end do
-    close(42)
-    stop
+    if (mindebug) then
+       open(42,file='dtauda.dat')
+       do debug_i=1,10000
+          debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
+          write(42,*) -1+1/debug_a, dtauda(debug_a)
+       end do
+       close(42)
+       stop
+    end if
 
     !-------------------------------------------------------------------
 
@@ -333,6 +336,9 @@
     end if
 
     !MMmod: DHOST----------------------------------
+    !Getting our modified Hubble for z<z_ini
+    !Standard one, computed above for z>z_ini
+    !WARNING!!! I think we don't have neutrinos here!
     if (a.lt.1/(1+CP%inired)) then
        dtauda=sqrt(3/grhoa2)
     else

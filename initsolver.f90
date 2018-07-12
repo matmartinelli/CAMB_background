@@ -7,10 +7,10 @@ use ModelParams
 implicit none
 
 !global variable for solver
-real(dl)                           :: initial_z                   !starting scale factor for ODE
-real(dl)                           :: final_z                     !final scale factor for ODE
+real(dl)                           :: initial_z                   !starting redshift for ODE solver
+real(dl)                           :: final_z                     !final redshify factor for ODE solver
 integer                            :: nsteps    = 10000           !number of ODE integration steps
-real(dl), dimension(:),allocatable :: z_ode,sol1, sol2, solH      !rhoDE(z) and H(z)
+real(dl), dimension(:),allocatable :: z_ode, sol1, sol2, solH     !redshift, rho_m, Psi, H
 real(dl), dimension(:),allocatable :: tempz, temp1, temp2, temp3  !temporary arrays
 real(dl), dimension(:),allocatable :: b1, c1, d1, b2, c2, d2      !coefficient of polynomial for interpolation
 real(dl), dimension(:),allocatable :: bh, ch, dh
@@ -22,13 +22,12 @@ logical                            :: debugging = .false.         !if T prints s
 contains
 
 subroutine getH(a,out_hubble)
-!this subroutine just returns rho_DE at any(ish) redshift
-!CHANGE ME: need to check which solution is rho_DE
+!this subroutine just returns H(z) at any(ish) redshift
+!it is called within dtauda function in CAMB
 real(dl), intent(in)  :: a
 real(dl)              :: z
 real(dl), intent(out) :: out_hubble
 integer               :: i
-real(dl) :: xi_dhost
 
 z=-1+1/a
 
@@ -39,9 +38,9 @@ end subroutine getH
 subroutine deinterface(CP,diff)
       Type(CAMBparams) CP
       integer, parameter      :: n = 1                          !number of dependent variables (-1)
-      real, dimension(0:n)    :: x                              !dependent variables: rho_m, rho_v
+      real, dimension(0:n)    :: x                              !dependent variables: rho_m, Psi
       real                    :: h                              !step size
-      real(dl)                :: rhoc_init, rhov_init
+      real(dl)                :: rhoc_init, Psi_init            !initial conditions
       integer                 :: i,j,k
       !debugging stuff
       real(dl)                :: debug_a, debug_c, debug_v, first_a_debug
@@ -57,7 +56,7 @@ subroutine deinterface(CP,diff)
       initial_z = CP%inired
       final_z   = 0._dl
 
-      !allocating arrays
+      !allocating arrays (MMtemp: we might want to move this to CosmoMC later)
       if (allocated(z_ode) .eqv. .false.) allocate(z_ode(nsteps), sol1(nsteps), sol2(nsteps),solH(nsteps))
       if (allocated(b1) .eqv. .false.) allocate(b1(nsteps), c1(nsteps), d1(nsteps))
       if (allocated(b2) .eqv. .false.) allocate(b2(nsteps), c2(nsteps), d2(nsteps))
@@ -65,36 +64,39 @@ subroutine deinterface(CP,diff)
       if (allocated(tempz) .eqv. .false.) allocate(tempz(nsteps), temp1(nsteps), temp2(nsteps),temp3(nsteps))
 
 
-      !setting initial conditions for rho_c and rho_v at z=0
+      !setting initial conditions for rho_m and Psi at z=initial_z-------------------------------------------
       if (9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost.lt.0._dl) then
          write(*,*) 'COMPLEX INITIAL CONDITION!!!'
          stop
       end if
 
+      aini = 1/(1+initial_z)
+
       xi_dhost = (6*CP%c3_dhost-2.*sqrt(9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost))/(9*CP%beta_dhost+48*CP%c4_dhost)
       if (debugging) write(*,*) 'xi_dhost=',xi_dhost
+      rhoc_init = (3./2.)*(1.-CP%omegav)*(aini)**(-3.)
+      Psi_init  = xi_dhost/sqrt((1-CP%omegav)*(aini)**(-3.))
 
-      !Initial conditions for x(0) and x(1). 
-      a0   = 4./(9.*(1.-CP%omegav))
-      aini = 1/(1+initial_z)
-      x = (/ (3./2.)*(1.-CP%omegav)*(aini)**(-3.),xi_dhost/sqrt((1-CP%omegav)*(aini)**(-3.)) /)
+      x = (/ rhoc_init, Psi_init /) !Passing initial conditions to Runge-Kutta array
 
       if (debugging) then
          write(*,*) '----------------------------------------------'
          write(*,*) 'initial conditions at redshift=',initial_z
-         write(*,*) 'rho_m=',x(0)
-         write(*,*) 'psi=',x(1)
+         write(*,*) 'rho_m =',x(0)
+         write(*,*) 'psi   =',x(1)
          write(*,*) '----------------------------------------------'
       end if
-      h = (final_z - initial_z)/(nsteps)                         !step size for runge-kutta
+      !------------------------------------------------------------------------------------------------------
 
-      call rk4sys(CP,n,h,x)
+      h = (final_z - initial_z)/(nsteps) !step size for runge-kutta
+
+      call rk4sys(CP,n,h,x) !Solving differential equations for rho_m and Psi
 
       if (debugging) write(*,*) "-------------------------------"
       if (debugging) write(*,*) "solution done: computed psi(z) "
       if (debugging) write(*,*) "-------------------------------"
 
-      !inverting order: interpolation routine works with (x,y) table
+      !If needed inverting order: interpolation routine works with (x,y) table
       !WARNING: x needs to be strictly increasing
       if (initial_z.gt.final_z) then
          do i=1,nsteps !if needed
@@ -118,7 +120,8 @@ subroutine deinterface(CP,diff)
       call newspline(z_ode, sol2, b2, c2, d2, nsteps)
       call newspline(z_ode, solH, bh, ch, dh, nsteps)
 
-      diff = abs(CP%H0-ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps))
+      !Computing H(z)-H0 to be passed to the minimizer
+      diff = abs(CP%H0-ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)) 
 
       
       if (debugging) write(*,*) 'checking obtained parameters at z=0'
@@ -129,12 +132,12 @@ subroutine deinterface(CP,diff)
 
 
       if (debugging) then
-         open(656, file='test_modomega.dat') !just prints the solutions to the eq.diff.: col1=z, col2=rhom, col3=psi
-         open(747, file='test_standard.dat') !prints standard evolution Omega_i(z) using rhom
-         open(666, file='test_psi.dat')
-         open(42, file='test_H.dat')
+         open(656, file='test_modomega.dat') !prints omega_m(z) with modified expansion (col1=z, col2=Omega_m(z))
+         open(747, file='test_standard.dat') !prints standard evolution Omega_i(z) using rhom (col2=mat col3=DE)
+         open(666, file='test_psi.dat')      !prints the differential equation solution for psi
+         open(42, file='test_H.dat')         !prints cosmic H(z) (col2=modified, col3=standard)
          do i=1,nsteps
-            write(656,*) z_ode(i), (1./3.)*sol1(i)*(CP%H0/solH(i))**2., CP%omegav*(CP%H0/solH(i))**2.
+            write(656,*) z_ode(i), (1./3.)*sol1(i)*(CP%H0/solH(i))**2.
             write(666,*) z_ode(i), sol2(i)
             write(747,*) z_ode(i), (1./3.)*sol1(i)*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)), CP%omegav*(1./((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav))
             write(42,*) z_ode(i),solH(i), CP%H0*sqrt((1-CP%omegav)*(1+z_ode(i))**3._dl+CP%omegav)
@@ -183,8 +186,8 @@ subroutine xpsys(CP,n,k,h,x,f)
       !to make things less messy
       call get_derivative(CP,redshift,n,x,solH(k),derivative1, derivative2)
 
-      !These are the actual derivatives CHANGE ME
-      !x'(0) = f(0)---> x(0) = phi
+      !These are the actual derivatives 
+      !x'(0) = f(0)---> x(0) = rho_m
       !x'(1) = f(1)---> x(1) = psi = phi'
 
       f(0) = derivative1
@@ -373,7 +376,8 @@ end function ispline
 
 
 subroutine get_derivative(CP,z,n,x,hubble,derivative1,derivative2)
-!This subroutine obtains the r.h.s. of the phi'' equation
+!This subroutine obtains the r.h.s. of the equations
+!Also computes H(z) at each step of the solver
 !Taken from Jorgos' notebook
 Type(CAMBparams) CP
 real, dimension (0:n), intent(in) ::  x
@@ -383,7 +387,9 @@ real(dl)              :: rhom !dimensionless rho_matter
 real(dl), intent(out) :: hubble
 real(dl), intent(out) :: derivative1, derivative2
 
-rhom = x(0)!3*(1-CP%omegav)*(1+z)**3. !This is the adimensional rho_m(z)
+rhom = x(0) !This is the dimensionaless rho_m(z) 
+!MMtemp: this definition is actually useless but
+!I don't want to change all the derivatives
 
 
 !Equations coming from notebook
@@ -431,7 +437,7 @@ hubble = (2*(6*CP%c3_dhost*x(1)**3*(1 + 2*CP%c4_dhost*x(1)**4)**2 + &
 
 
 
-derivative1 = 3._dl*x(0)/(1+z)
+derivative1 = 3._dl*x(0)/(1+z) !Standard derivative for rho_m differential equation
 
 derivative2 =  (3*x(1)*(2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*(-12*CP%c3_dhost*x(1)*(1 + 2*CP%c4_dhost*x(1)**4)* &
      &       (6*CP%c3_dhost**2*x(1)**6*(1 + 2*CP%c4_dhost*x(1)**4)**2 + (1 + 2*CP%c4_dhost*x(1)**4)**2*(2 + (3*CP%beta_dhost + 20*CP%c4_dhost)*x(1)**4)*rhom +  &
