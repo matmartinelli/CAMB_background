@@ -1,73 +1,26 @@
+cd /cosmomc/forutils
+make ReleaseMPI
 
-set -e
+cd /cosmomc
+wget http://irsa.ipac.caltech.edu/data/Planck/release_2/software/COM_Likelihood_Code-v2.0.R2.00.tar.bz2
+tar xvfj COM_Likelihood_Code-v2.*.tar.bz2
+cd plc-2.0
+./waf configure --install_all_deps
+./waf install
+source ./bin/clik_profile.sh
+cd ..
+wget http://irsa.ipac.caltech.edu/data/Planck/release_2/software/COM_Likelihood_Data-baseline_R2.00.tar.gz
+tar xvfz COM_Likelihood_Data-baseline_R2.00.tar.gz
+ln -s $(pwd)/plc_2.0 ./data/clik
+rm -f COM_Likelihood_Data-baseline_R2.00.tar.gz
 
-pushd pycamb
+make
 
-source activate py2-environment
-python --version
-python setup.py install
-python -c "import camb; print(camb.__version__)"
-python setup.py test
-pip uninstall -y camb
-rm -Rf dist/*
-rm -Rf build/*
-rm -f camb/*.so
+mpirun -np 1 --allow-run-as-root ./cosmomc test.ini
 
-if [[ $TRAVIS_REPO_SLUG == "cmbant/CAMB" && "$TRAVIS_PULL_REQUEST" == "false" ]] 
-then
- case "$TRAVIS_BRANCH" in
- devel*) export CAMB_PACKAGE_NAME=camb_devel ;;
-    *) export CAMB_PACKAGE_NAME=camb
- esac
- python setup.py sdist
- pip install twine
- twine upload -r pypitest --repository-url https://test.pypi.org/legacy/ dist/*
- source activate py3-environment
- python --version
- mkdir -p test_dir
- pushd test_dir   
- pip install -i https://testpypi.python.org/pypi $CAMB_PACKAGE_NAME
- python -c "import camb; print(camb.__version__)"
- python -m unittest camb_tests.camb_test
- pip uninstall -y $CAMB_PACKAGE_NAME
- popd
-else
- source activate py3-environment
- python --version
- python setup.py install
- python -c "import camb; print(camb.__version__)"
- python setup.py test
- pip uninstall -y camb
- rm -Rf dist/*
- rm -Rf build/*
- rm -f camb/*.so
-fi
-
-popd
-
-case "$TRAVIS_BRANCH" in
- devel*) 
-       BRANCH="devel" 
-       ;;
-    *) 
-       make camb EQUATIONS=equations_ppf
-       BRANCH="master" 
-       export CAMB_TESTS_NO_SOURCES=1
-       export CAMB_TESTS_NO_DE=1
-       ;;
-esac
+mpirun -np 1 --allow-run-as-root ./cosmomc test_planck.ini
+rc=$?
 
 
-make clean
-make Release
+exit $rc
 
-mkdir testfiles
-python python/CAMB_test_files.py testfiles --make_ini
-
-pushd testfiles
-git clone -b $BRANCH --depth=1 https://github.com/cmbant/CAMB_test_outputs.git
-popd
-
-python python/CAMB_test_files.py testfiles --diff_to CAMB_test_outputs/test_outputs --verbose
-
-rm -Rf testfiles/CAMB_test_outputs
