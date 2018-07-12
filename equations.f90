@@ -32,12 +32,23 @@
     !If you are tempted to set this = .false. read
     ! http://cosmocoffee.info/viewtopic.php?t=811
     ! http://cosmocoffee.info/viewtopic.php?t=512
+    !MMmod: DHOST------------------------------
+    logical             :: minimizeme = .true. !flag to activate DHOST minimization
+    real(dl)            :: minstep    = 0.1_dl !starting stepsize of the minimizer (in percentage of the varied parameter)
+    !------------------------------------------    
 
     contains
 
     subroutine DarkEnergy_ReadParams(Ini)
     use IniFile
     Type(TIniFile) :: Ini
+
+    !MMmod: DHOST---------------------------------
+    !reading flags and options for DHOST minimizer
+    minimizeme = Ini_Read_Logical_File(Ini,'minimize_DHOST',.false.)
+    if (minimizeme) minstep = Ini_Read_Double_File(Ini,'minimizer_step')
+    !---------------------------------------------
+
 
     w_lam = Ini_Read_Double_File(Ini,'w', -1.d0)
     cs2_lam = Ini_Read_Double_File(Ini,'cs2_lam',1.d0)
@@ -59,23 +70,115 @@
 
 
     subroutine init_background
+    use LambdaGeneral
+    !MMmod: DHOST---------------------------------------------------------
+    use initsolver
+    !MINIMIZATION PARAMETERS:
+    !This part is needed to get the modified DHOST background to obtain the
+    !same H0 we input from CAMB
+    integer             :: iter               !iteration index
+    integer, parameter  :: maxiter = 10000    !maximum number of minimizer iterations
+    real(dl), parameter :: mintol=0.01        !tolerance on the final difference
+    real(dl)            :: diff, diffp, diffm !working variables
+    real(dl)            :: time1, time2       !variables for time computation
+    real(dl)            :: step               !stepsize of the minimizer (absolute value)
+    real(dl)            :: finalhubble        !H(z=0) after minizer
+    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
+
+    !Some debug stuff
+    real(dl) debug_a, debug_H
+    integer :: debug_i
+    real(dl) dtauda
+
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
-    end  subroutine init_background
 
+    !calling ODE solver for DHOST background
+    if (minimizeme) then
+       step = CP%beta_dhost*minstep
+
+       if (mindebug) write(*,*) '-------STARTING MINIMIZATION!-------'
+       if (mindebug) write(*,*) 'starting beta                      =',CP%beta_dhost
+       if (mindebug) write(*,*) 'starting step                      =',step
+       if (mindebug) write(*,*) 'tolerance                          =',mintol
+       if (mindebug) write(*,*) 'max iterations                     =',maxiter
+       if (mindebug) write(*,*) '------------------------------------'
+       call cpu_time(time1)
+       do iter=1,maxiter
+          call deinterface(CP,diff)
+          if (diff.le.mintol) then
+             call getH(1._dl,finalhubble)
+             call cpu_time(time2)
+             if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
+             if (mindebug) write(*,*) 'input H0                        =',CP%H0
+             if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
+             if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
+             if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
+             if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
+             if (mindebug) write(*,*) 'final step                      =',step
+             if (mindebug) write(*,*) 'number of iterations needed     =',iter
+             if (mindebug) write(*,*) 'elapsed time (seconds)          =',time2-time1
+             if (mindebug) write(*,*) '---------------------------------'
+             exit
+          else
+             CP%beta_dhost = CP%beta_dhost+step
+             call deinterface(CP,diffp)
+             if (diffp.gt.diff) then
+                CP%beta_dhost = CP%beta_dhost - 2*step
+                call deinterface(CP,diffm)
+                if (diffm.gt.diff) then
+                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step'
+                   CP%beta_dhost = CP%beta_dhost+step
+                   step = step/2._dl
+                end if
+             end if
+          end if
+          if (iter.eq.maxiter) then
+             write(*,*) 'maximum number of iterations reached :( '
+             stop
+          end if
+       end do
+    else
+       call deinterface(CP,diff)
+    end if
+
+    if (mindebug) then
+       open(42,file='dtauda.dat')
+       do debug_i=1,10000
+          debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
+          write(42,*) -1+1/debug_a, dtauda(debug_a)
+       end do
+       close(42)
+!       stop
+       open(666,file='parameter.dat')
+       write(666,*) CP%c2_dhost
+       write(666,*) CP%c3_dhost
+       write(666,*) CP%c4_dhost
+       write(666,*) CP%beta_dhost
+       write(666,*) 1-CP%omegav
+       write(666,*) CP%H0
+       close(666)
+    end if
+
+    !-------------------------------------------------------------------
+
+    end  subroutine init_background
 
     !Background evolution
     function dtauda(a)
     !get d tau / d a
     use precision
+    use constants !MMmod: DHOST
     use ModelParams
     use MassiveNu
     use LambdaGeneral
+    use initsolver !MMmod: DHOST
     implicit none
     real(dl) dtauda
     real(dl), intent(IN) :: a
     real(dl) rhonu,grhoa2, a2
+    real(dl) myhubble !MMmod: DHOST rho_DE
     integer nu_i
 
     a2=a**2
@@ -95,9 +198,22 @@
         end do
     end if
 
-    dtauda=sqrt(3/grhoa2)
+    !MMmod: DHOST----------------------------------
+    !Getting our modified Hubble for z<z_ini
+    !Standard one, computed above for z>z_ini
+    !WARNING!!! I think we don't have neutrinos here!
+    if (a.lt.1/(1+CP%inired)) then
+       dtauda=sqrt(3/grhoa2)
+    else
+       call getH(a,myhubble)
+       !myhubble is cosmic and in km/Mpc/s units
+       !converted here to be consistent with dtauda
+       dtauda = 1/(a**2._dl*myhubble*1.e3/c)
+    end if
+    !----------------------------------------------
 
     end function dtauda
+    
 
     !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
