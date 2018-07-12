@@ -42,8 +42,8 @@
     logical :: is_cosmological_constant
     private nde,ddw_ppf,rde,ade,ddrde,amin
     !MMmod: DHOST------------------------------
-    logical             :: minimizeme         !flag to activate DHOST minimization
-    real(dl)            :: minstep            !starting stepsize of the minimizer (in percentage of the varied parameter)
+    logical             :: minimizeme = .true. !flag to activate DHOST minimization
+    real(dl)            :: minstep    = 0.1_dl !starting stepsize of the minimizer (in percentage of the varied parameter)
     !------------------------------------------
     contains
 
