@@ -45,8 +45,8 @@
 
     !MMmod: DHOST---------------------------------
     !reading flags and options for DHOST minimizer
-    minimizeme = Ini_Read_Logical_File(Ini,'minimize_DHOST',.true.)
-    if (minimizeme) minstep = Ini_Read_Double_File(Ini,'minimizer_step',0.1_dl)
+!    minimizeme = Ini_Read_Logical_File(Ini,'minimize_DHOST',.true.)
+!    if (minimizeme) minstep = Ini_Read_Double_File(Ini,'minimizer_step',0.1_dl)
     !---------------------------------------------
 
 
@@ -94,10 +94,11 @@
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
 
+
     !calling ODE solver for DHOST background
     if (minimizeme) then
        step = CP%beta_dhost*minstep
-
+write(*,*)step, minstep, CP%beta_dhost
        if (mindebug) write(*,*) '-------STARTING MINIMIZATION!-------'
        if (mindebug) write(*,*) 'starting beta                      =',CP%beta_dhost
        if (mindebug) write(*,*) 'starting step                      =',step
@@ -128,7 +129,7 @@
                 CP%beta_dhost = CP%beta_dhost - 2*step
                 call deinterface(CP,diffm)
                 if (diffm.gt.diff) then
-                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step'
+                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step',step
                    CP%beta_dhost = CP%beta_dhost+step
                    step = step/2._dl
                 end if
@@ -202,14 +203,14 @@
     !Getting our modified Hubble for z<z_ini
     !Standard one, computed above for z>z_ini
     !WARNING!!! I think we don't have neutrinos here!
-    if (a.lt.1/(1+CP%inired)) then
+    !if (a.lt.1/(1+CP%inired)) then
        dtauda=sqrt(3/grhoa2)
-    else
-       call getH(a,myhubble)
-       !myhubble is cosmic and in km/Mpc/s units
-       !converted here to be consistent with dtauda
-       dtauda = 1/(a**2._dl*myhubble*1.e3/c)
-    end if
+    !else
+    !   call getH(a,myhubble)
+    !   !myhubble is cosmic and in km/Mpc/s units
+    !   !converted here to be consistent with dtauda
+    !   dtauda = 1/(a**2._dl*myhubble*1.e3/c)
+    !end if
     !----------------------------------------------
 
     end function dtauda

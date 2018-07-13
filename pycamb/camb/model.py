@@ -235,6 +235,12 @@ class CAMBparams(CAMB_Structure):
         ("AccurateBB", c_int),  # logical
         ("AccurateReionization", c_int),  # logical
         ("MassiveNuMethod", c_int),
+        #MMmod: DHOST
+        ("c2_dhost", c_double),
+        ("c3_dhost", c_double),
+        ("c4_dhost", c_double),
+        ("beta_dhost", c_double),
+        ("inired", c_double),
         ("InitPower", ipow.InitialPowerParams),
         ("Reion", ion.ReionizationParams),
         ("Recomb", recomb.RecombinationParams),
@@ -304,9 +310,9 @@ class CAMBparams(CAMB_Structure):
     def set_cosmology(self, H0=67.0, cosmomc_theta=None, ombh2=0.022, omch2=0.12, omk=0.0,
                       neutrino_hierarchy='degenerate', num_massive_neutrinos=1,
                       mnu=0.06, nnu=3.046, YHe=None, meffsterile=0.0, standard_neutrino_neff=3.046,
-                      c2_dhost=3.0, c3_dhost=5, c4_dhost=1, beta_dhost=-5.3, #MMmod: DHOST parameters
                       TCMB=constants.COBE_CMBTemp, tau=None, deltazrei=None, bbn_predictor=None,
-                      theta_H0_range=[10, 100]):
+                      theta_H0_range=[10, 100],
+                      c2dhost=3, c3dhost=5, c4dhost=1, betadhost=-5.3, initial_redshift=10.0):#MMmod: DHOST
         """
         Sets cosmological parameters in terms of physical densities and parameters used in Planck 2015 analysis.
         Default settings give a single distinct neutrino mass eigenstate, by default one neutrino with mnu = 0.06eV.
@@ -335,6 +341,16 @@ class CAMBparams(CAMB_Structure):
                  it will raise an exception.
 
         """
+
+        #MMmod: DHOST
+        self.c2_dhost = c2dhost
+        self.c3_dhost = c3dhost
+        self.c4_dhost = c4dhost
+        self.beta_dhost = betadhost
+        self.inired = initial_redshift
+        
+      
+
 
         if YHe is None:
             # use BBN prediction
@@ -375,6 +391,15 @@ class CAMBparams(CAMB_Structure):
         self.omegab = ombh2 / fac
         self.omegac = omch2 / fac
 
+
+        #MMmod: DHOST
+#        self.c2_dhost = c2_dhost
+#        self.c3_dhost = c3_dhost
+#        self.c4_dhost = c4_dhost
+#        self.beta_dhost = beta_dhost
+#        self.inired = initial_redshift
+        
+
         neutrino_mass_fac = 94.07
         # conversion factor for thermal with Neff=3 TCMB=2.7255
 
@@ -391,6 +416,8 @@ class CAMBparams(CAMB_Structure):
             neutrino_hierarchy = neutrino_hierarchies.index(neutrino_hierarchy) + 1
 
         omnuh2 = omnuh2 + omnuh2_sterile
+
+        
         self.omegan = omnuh2 / fac
         self.omegam = self.omegab + self.omegac + self.omegan
         self.omegav = 1 - omk - self.omegam
