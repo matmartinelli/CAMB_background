@@ -33,8 +33,8 @@
     ! http://cosmocoffee.info/viewtopic.php?t=811
     ! http://cosmocoffee.info/viewtopic.php?t=512
     !MMmod: DHOST------------------------------
-    logical             :: minimizeme = .true. !flag to activate DHOST minimization
-    real(dl)            :: minstep    = 0.1_dl !starting stepsize of the minimizer (in percentage of the varied parameter)
+!    logical             :: minimizeme = .true. !flag to activate DHOST minimization
+ !   real(dl)            :: minstep    = 0.1_dl !starting stepsize of the minimizer (in percentage of the varied parameter)
     !------------------------------------------    
 
     contains
@@ -82,7 +82,8 @@
     real(dl)            :: diff, diffp, diffm !working variables
     real(dl)            :: time1, time2       !variables for time computation
     real(dl)            :: step               !stepsize of the minimizer (absolute value)
-    real(dl)            :: finalhubble        !H(z=0) after minizer
+    real(dl)            :: finalhubble        !H(z=0) after minizer\
+    real(dl)            :: minstep = 0.1_dl
     logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
 
     !Some debug stuff
@@ -95,7 +96,7 @@
     !massive neutrinos are initialized and after GetOmegak
 
     !calling ODE solver for DHOST background
-    if (minimizeme) then
+    if (CP%minimizeme) then
        step = CP%beta_dhost*minstep
 
        if (mindebug) write(*,*) '-------STARTING MINIMIZATION!-------'
@@ -128,7 +129,7 @@
                 CP%beta_dhost = CP%beta_dhost - 2*step
                 call deinterface(CP,diffm)
                 if (diffm.gt.diff) then
-                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step'
+                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step', step, CP%beta_dhost
                    CP%beta_dhost = CP%beta_dhost+step
                    step = step/2._dl
                 end if
@@ -143,23 +144,15 @@
        call deinterface(CP,diff)
     end if
 
-    if (mindebug) then
-       open(42,file='dtauda.dat')
-       do debug_i=1,10000
-          debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
-          write(42,*) -1+1/debug_a, dtauda(debug_a)
-       end do
-       close(42)
+!    if (mindebug) then
+!       open(42,file='dtauda.dat')
+!       do debug_i=1,10000
+!          debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
+!          write(42,*) -1+1/debug_a, dtauda(debug_a)
+!       end do
+!       close(42)
 !       stop
-       open(666,file='parameter.dat')
-       write(666,*) CP%c2_dhost
-       write(666,*) CP%c3_dhost
-       write(666,*) CP%c4_dhost
-       write(666,*) CP%beta_dhost
-       write(666,*) 1-CP%omegav
-       write(666,*) CP%H0
-       close(666)
-    end if
+!    end if
 
     !-------------------------------------------------------------------
 
@@ -202,14 +195,14 @@
     !Getting our modified Hubble for z<z_ini
     !Standard one, computed above for z>z_ini
     !WARNING!!! I think we don't have neutrinos here!
-    !if (a.lt.1/(1+CP%inired)) then
+    if (a.lt.1/(1+CP%inired)) then
        dtauda=sqrt(3/grhoa2)
-    !else
-    !   call getH(a,myhubble)
-    !   !myhubble is cosmic and in km/Mpc/s units
-    !   !converted here to be consistent with dtauda
-    !   dtauda = 1/(a**2._dl*myhubble*1.e3/c)
-    !end if
+    else
+       call getH(a,myhubble)
+       !myhubble is cosmic and in km/Mpc/s units
+       !converted here to be consistent with dtauda
+       dtauda = 1/(a**2._dl*myhubble*1.e3/c)
+    end if
     !----------------------------------------------
 
     end function dtauda
