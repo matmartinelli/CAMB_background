@@ -106,11 +106,11 @@
     P%h0     = Ini_Read_Double('hubble')
 
     !MMmod: DHOST parameters
-    P%c2_dhost   = Ini_Read_Double('c2_dhost') 
-    P%c3_dhost   = Ini_Read_Double('c3_dhost')
-    P%c4_dhost   = Ini_Read_Double('c4_dhost')
-    P%beta_dhost = Ini_Read_Double('beta_dhost')
-    P%inired     = Ini_Read_Double('initial_redshift')
+    !P%c2_dhost   = Ini_Read_Double('c2_dhost',1._dl) 
+    !P%c3_dhost   = Ini_Read_Double('c3_dhost',1._dl)
+    !P%c4_dhost   = Ini_Read_Double('c4_dhost',1._dl)
+    !P%beta_dhost = Ini_Read_Double('beta_dhost',1._dl)
+    !P%inired     = Ini_Read_Double('initial_redshift',10._dl)
 
 
     if (Ini_Read_Logical('use_physical',.false.)) then

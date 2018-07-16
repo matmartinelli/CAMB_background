@@ -316,6 +316,8 @@
     P%omegan  = 0
     P%H0      = 65
 
+    !P%c2_dhost = 3.0
+
     P%TCMB    = COBE_CMBTemp
     P%YHe     = 0.24
     P%Num_Nu_massless =default_nnu

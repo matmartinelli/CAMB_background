@@ -14,7 +14,7 @@ print('CAMB version: %s '%camb.__version__)
 #Set up a new set of parameters for CAMB
 pars = camb.CAMBparams()
 #This function sets up CosmoMC-like settings, with one massive neutrino and helium set using BBN consistency
-pars.set_cosmology(H0=70.0, ombh2=0.0226, omch2=0.122, mnu=0.06, omk=0, tau=0.06, c2dhost=3, c3dhost=5, c4dhost=1, betadhost=-5.3, initial_redshift=20.0)
+pars.set_cosmology(H0=70.0, ombh2=0.0226, omch2=0.122, mnu=0.06, omk=0, tau=0.06, c2_dhost=3, c3_dhost=5, c4_dhost=1, beta_dhost=-5.3, inired=20.0)
 pars.InitPower.set_params(ns=0.965, r=0, As=2e-9)
 pars.set_for_lmax(2500, lens_potential_accuracy=0);
 

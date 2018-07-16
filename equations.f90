@@ -94,11 +94,10 @@
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
 
-
     !calling ODE solver for DHOST background
     if (minimizeme) then
        step = CP%beta_dhost*minstep
-write(*,*)step, minstep, CP%beta_dhost
+
        if (mindebug) write(*,*) '-------STARTING MINIMIZATION!-------'
        if (mindebug) write(*,*) 'starting beta                      =',CP%beta_dhost
        if (mindebug) write(*,*) 'starting step                      =',step
@@ -129,7 +128,7 @@ write(*,*)step, minstep, CP%beta_dhost
                 CP%beta_dhost = CP%beta_dhost - 2*step
                 call deinterface(CP,diffm)
                 if (diffm.gt.diff) then
-                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step',step
+                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step'
                    CP%beta_dhost = CP%beta_dhost+step
                    step = step/2._dl
                 end if

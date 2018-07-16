@@ -111,7 +111,7 @@
         ! _tensor settings only used in initialization,
         !Max_l and Max_eta_k are set to the tensor variables if only tensors requested
 
-        real(dl)  :: omegab, omegac, omegav, omegan
+        real(dl)  :: omegab, omegac, omegav, omegan,c2_dhost, c3_dhost, c4_dhost, beta_dhost, inired
         !Omega baryon, CDM, Lambda and massive neutrino
         real(dl)  :: H0,TCMB,yhe,Num_Nu_massless
         integer   :: Num_Nu_massive !sum of Nu_mass_numbers below
@@ -121,8 +121,8 @@
         real(dl)  :: Nu_mass_fractions(max_nu) !The ratios of the total densities
         integer   :: Nu_mass_numbers(max_nu) !physical number per eigenstate
         !MMmod: DHOST parameters
-        real(dl)  :: c2_dhost, c3_dhost, c4_dhost, beta_dhost!, xi_dhost
-        real(dl)  :: inired
+        !real(dl)  :: c2_dhost!, c3_dhost, c4_dhost, beta_dhost!, xi_dhost
+        !real(dl)  :: inired
 
         integer   :: Scalar_initial_condition
         !must be one of the initial_xxx values defined in GaugeInterface
