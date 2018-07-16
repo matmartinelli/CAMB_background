@@ -105,6 +105,7 @@
         logical   :: PK_WantTransfer             !JD 08/13 Added so both NL lensing and PK can be run at the same time
         integer   :: NonLinear
         logical   :: Want_CMB
+        logical   :: minimizeme !MMmod: DHOST
 
         integer   :: Max_l, Max_l_tensor
         real(dl)  :: Max_eta_k, Max_eta_k_tensor

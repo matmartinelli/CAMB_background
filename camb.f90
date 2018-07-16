@@ -347,6 +347,8 @@
     P%want_zstar = .false.  !!JH
     P%want_zdrag = .false.  !!JH
 
+    P%minimizeme = .true. !MMmod: DHOST
+
     P%Max_l=2500
     P%Max_eta_k=5000
     P%Max_l_tensor=600

@@ -211,6 +211,7 @@ class CAMBparams(CAMB_Structure):
         ("PK_WantTransfer", c_int),  # logical
         ("NonLinear", c_int),
         ("Want_CMB", c_int),  # logical
+        ("minimizeme",c_int), # logical
         ("max_l", c_int),
         ("max_l_tensor", c_int),
         ("max_eta_k", c_double),
