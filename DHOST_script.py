@@ -40,7 +40,7 @@ results = camb.get_results(pars)
 z  = np.linspace(0,4,100)
 DA = results.angular_diameter_distance(z)
 
-plt.plot(z, DA, color='#8E001C', label=r'$\Lambda$CDM')
+plt.plot(z, DA, color='#8E001C', label=r'CDM')
 plt.plot(z, DA_dhost, color='#FFB300', label='DHOST')
 plt.xlabel('$z$')
 plt.ylabel(r'$D_A /\rm{Mpc}$')
