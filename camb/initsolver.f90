@@ -67,7 +67,8 @@ subroutine deinterface(CP,diff)
       !setting initial conditions for rho_m and Psi at z=initial_z-------------------------------------------
       if (9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost.lt.0._dl) then
          write(*,*) 'COMPLEX INITIAL CONDITION!!!'
-         stop
+         diff = 1000._dl
+         return
       end if
 
       aini = 1/(1+initial_z)
@@ -146,7 +147,7 @@ subroutine deinterface(CP,diff)
          close(747)
          close(42)
          close(666)
-         stop
+         !stop
       end if
 
 

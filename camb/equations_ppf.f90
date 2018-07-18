@@ -222,13 +222,13 @@
     !This part is needed to get the modified DHOST background to obtain the 
     !same H0 we input from CAMB 
     integer             :: iter               !iteration index
-    integer, parameter  :: maxiter = 10000    !maximum number of minimizer iterations
+    integer, parameter  :: maxiter = 100000    !maximum number of minimizer iterations
     real(dl), parameter :: mintol=0.01        !tolerance on the final difference
     real(dl)            :: diff, diffp, diffm !working variables
     real(dl)            :: time1, time2       !variables for time computation
     real(dl)            :: step               !stepsize of the minimizer (absolute value)
     real(dl)            :: finalhubble        !H(z=0) after minizer
-    logical, parameter  :: mindebug = .false. !if set to true prints a bunch of info on the minimization process
+    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
 
     !Some debug stuff
     real(dl) debug_a, debug_H
@@ -261,6 +261,7 @@
              if (mindebug) write(*,*) 'input H0                        =',CP%H0
              if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
              if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
+             if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
              if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
              if (mindebug) write(*,*) 'final step                      =',step
              if (mindebug) write(*,*) 'number of iterations needed     =',iter
@@ -280,7 +281,10 @@
                 end if
              end if
           end if
-
+          if (iter.eq.maxiter) then
+             write(*,*) 'maximum number of iterations reached :( '
+             stop
+          end if
        end do
     else
        call deinterface(CP,diff)
@@ -293,7 +297,15 @@
           write(42,*) -1+1/debug_a, dtauda(debug_a)
        end do
        close(42)
-       stop
+!       stop
+       open(666,file='parameter.dat')
+       write(666,*) CP%c2_dhost
+       write(666,*) CP%c3_dhost
+       write(666,*) CP%c4_dhost
+       write(666,*) CP%beta_dhost
+       write(666,*) 1-CP%omegav
+       write(666,*) CP%H0
+       close(666)
     end if
 
     !-------------------------------------------------------------------

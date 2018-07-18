@@ -269,6 +269,7 @@
     real(dl) nu_massless_degeneracy, neff_i
     external GetOmegak
     real(dl), save :: last_tau0
+    real(dl) :: realini
     !Constants in SI units
 
     global_error_flag = 0
@@ -336,6 +337,15 @@
     if ((CP%WantTransfer).and. CP%MassiveNuMethod==Nu_approx) then
         CP%MassiveNuMethod = Nu_trunc
     end if
+
+    realini = 9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost
+    if ( realini.lt.0._dl ) then
+       global_error_flag         = 1
+       global_error_message      = 'DHOST: complex initial conditions'
+       if (present(error)) error = global_error_flag
+       return
+    end if
+
 
     CP%omegak = GetOmegak()
 
