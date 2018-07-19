@@ -117,6 +117,7 @@
         real(mcp) YHe, nnu, iso_cdm_correlated, ALens, Alensf, fdm !fdm is dark matter annihilation, eg,. 0910.3663
         real(mcp) :: omnuh2_sterile = 0._mcp  !note omnhu2 is the sum of this + standard neutrinos
         real(mcp) :: sum_mnu_standard
+        real(mcp) :: thetaCMB !MMmod: added to use as derived parameter
         real(mcp) reserved(5)
         !MMmod: DHOST-------
         real(mcp) :: c2_dhost

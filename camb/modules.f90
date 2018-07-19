@@ -338,6 +338,9 @@
         CP%MassiveNuMethod = Nu_trunc
     end if
 
+
+    !MMmod: DHOST
+    !if initial conditions are complex rejects the point
     realini = 9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost
     if ( realini.lt.0._dl ) then
        global_error_flag         = 1
