@@ -214,10 +214,12 @@
     end function GetOmegak
 
 
-    subroutine init_background
+    subroutine init_background(error)
     use LambdaGeneral
     !MMmod: DHOST---------------------------------------------------------
     use initsolver 
+
+    integer, optional :: error !Zero if OK
     !MINIMIZATION PARAMETERS:
     !This part is needed to get the modified DHOST background to obtain the 
     !same H0 we input from CAMB 
@@ -282,31 +284,16 @@
              end if
           end if
           if (iter.eq.maxiter) then
-             write(*,*) 'maximum number of iterations reached :( '
-             stop
+             global_error_flag         = 1
+             global_error_message      = 'maximum number of iterations reached :('
+             if (present(error)) error = global_error_flag
+             return
           end if
        end do
     else
        call deinterface(CP,diff)
     end if
 
-    if (mindebug) then
-       open(42,file='dtauda.dat')
-       do debug_i=1,10000
-          debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
-          write(42,*) -1+1/debug_a, dtauda(debug_a)
-       end do
-       close(42)
-!       stop
-       open(666,file='parameter.dat')
-       write(666,*) CP%c2_dhost
-       write(666,*) CP%c3_dhost
-       write(666,*) CP%c4_dhost
-       write(666,*) CP%beta_dhost
-       write(666,*) 1-CP%omegav
-       write(666,*) CP%H0
-       close(666)
-    end if
 
     !-------------------------------------------------------------------
 

@@ -407,7 +407,7 @@
 
     if (.not.call_again) then
         call init_massive_nu(CP%omegan /=0)
-        call init_background
+        call init_background(error)
         if (global_error_flag==0) then
             CP%tau0=TimeOfz(0._dl)
             ! print *, 'chi = ',  (CP%tau0 - TimeOfz(0.15_dl)) * CP%h0/100
