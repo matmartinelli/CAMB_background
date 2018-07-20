@@ -146,7 +146,7 @@ subroutine deinterface(CP,diff)
          close(747)
          close(42)
          close(666)
-         stop
+         !stop
       end if
 
 

@@ -32,22 +32,12 @@
     !If you are tempted to set this = .false. read
     ! http://cosmocoffee.info/viewtopic.php?t=811
     ! http://cosmocoffee.info/viewtopic.php?t=512
-    !MMmod: DHOST------------------------------
-!    logical             :: minimizeme = .true. !flag to activate DHOST minimization
- !   real(dl)            :: minstep    = 0.1_dl !starting stepsize of the minimizer (in percentage of the varied parameter)
-    !------------------------------------------    
 
     contains
 
     subroutine DarkEnergy_ReadParams(Ini)
     use IniFile
     Type(TIniFile) :: Ini
-
-    !MMmod: DHOST---------------------------------
-    !reading flags and options for DHOST minimizer
-!    minimizeme = Ini_Read_Logical_File(Ini,'minimize_DHOST',.true.)
-!    if (minimizeme) minstep = Ini_Read_Double_File(Ini,'minimizer_step',0.1_dl)
-    !---------------------------------------------
 
 
     w_lam = Ini_Read_Double_File(Ini,'w', -1.d0)
@@ -70,93 +60,139 @@
 
 
     subroutine init_background
-    use LambdaGeneral
-    !MMmod: DHOST---------------------------------------------------------
-    use initsolver
-    !MINIMIZATION PARAMETERS:
-    !This part is needed to get the modified DHOST background to obtain the
-    !same H0 we input from CAMB
-    integer             :: iter               !iteration index
-    integer, parameter  :: maxiter = 10000    !maximum number of minimizer iterations
-    real(dl), parameter :: mintol=0.01        !tolerance on the final difference
-    real(dl)            :: diff, diffp, diffm !working variables
-    real(dl)            :: time1, time2       !variables for time computation
-    real(dl)            :: step               !stepsize of the minimizer (absolute value)
-    real(dl)            :: finalhubble        !H(z=0) after minizer\
-    real(dl)            :: minstep = 0.1_dl
-    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
-
-    !Some debug stuff
-    real(dl) debug_a, debug_H
-    integer :: debug_i
-    real(dl) dtauda
-
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
 
-    !calling ODE solver for DHOST background
-    if (CP%minimizeme) then
-       step = CP%beta_dhost*minstep
+    use LambdaGeneral
 
-       if (mindebug) write(*,*) '-------STARTING MINIMIZATION!-------'
-       if (mindebug) write(*,*) 'starting beta                      =',CP%beta_dhost
-       if (mindebug) write(*,*) 'starting step                      =',step
-       if (mindebug) write(*,*) 'tolerance                          =',mintol
-       if (mindebug) write(*,*) 'max iterations                     =',maxiter
-       if (mindebug) write(*,*) '------------------------------------'
-       call cpu_time(time1)
-       do iter=1,maxiter
-          call deinterface(CP,diff)
-          if (diff.le.mintol) then
-             call getH(1._dl,finalhubble)
-             call cpu_time(time2)
-             if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
-             if (mindebug) write(*,*) 'input H0                        =',CP%H0
-             if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
-             if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
-             if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
-             if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
-             if (mindebug) write(*,*) 'final step                      =',step
-             if (mindebug) write(*,*) 'number of iterations needed     =',iter
-             if (mindebug) write(*,*) 'elapsed time (seconds)          =',time2-time1
-             if (mindebug) write(*,*) '---------------------------------'
-             exit
-          else
-             CP%beta_dhost = CP%beta_dhost+step
-             call deinterface(CP,diffp)
-             if (diffp.gt.diff) then
-                CP%beta_dhost = CP%beta_dhost - 2*step
-                call deinterface(CP,diffm)
-                if (diffm.gt.diff) then
-                   if (mindebug) write(*,*) 'both sides give higher diff, reducing step', step, CP%beta_dhost
-                   CP%beta_dhost = CP%beta_dhost+step
-                   step = step/2._dl
-                end if
-             end if
-          end if
-          if (iter.eq.maxiter) then
-             write(*,*) 'maximum number of iterations reached :( '
-             stop
-          end if
+    !MMmod: DHOST---------------------------------------------------------
+    use initsolver
+    use minitools  !New module for BRENT minimization
+    implicit none
+
+    !MINIMIZATION PARAMETERS:
+    !This part is needed to get the modified DHOST background to obtain the
+    !same H0 we input from CAMB
+    !
+    !Code is now using BRENT minimization library
+    !This library has been added through a new module minitools in tools_minimizer.f90
+    !
+    !For an explanation of the variables and methods look at:
+    !https://people.sc.fsu.edu/~jburkardt/f_src/brent/brent.html
+
+    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
+    real(dl)            :: diff               !difference between H0 and computed H(z=0)
+    real(dl)            :: time1, time2       !variables for time computation
+    real(dl)            :: finalhubble        !H(z=0) after minizer
+    !BRENT variables
+    real(dl)            :: aa,amin
+    real(dl)            :: bb,bmin
+    real(dl), external  :: minifunc
+    real(dl)            :: value
+    integer             :: status
+    integer             :: stepmin
+    real(dl)            :: arg
+
+    real(dl) :: condreal                      !beta>condreal gives complex initial conditions
+
+
+    if (CP%minimizeme) then
+       condreal = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost
+  
+       bb = condreal-0.01  !upper limit of the minimizing interval
+
+       !MMchange: setting the lower limit for the interval
+       if (condreal.gt.0._dl) then
+          aa = -0.5*condreal
+       else
+          aa = 2.*condreal
+       end if
+
+       if (mindebug) then
+          write ( *, '(a)' ) ' '
+          write ( *, '(a)' ) ' '
+          write ( *, '(a)' ) ' '
+          write ( *, '(a)' ) '  Step      X                          F(X)'
+          write ( *, '(a)' ) ' '
+       end if
+       stepmin = 0
+
+       arg = aa
+       value = minifunc ( arg )
+       if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
+
+       arg = bb
+       value = minifunc ( arg )
+       if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
+
+       amin = aa
+       bmin = bb
+       status = 0
+
+       do
+
+         call local_min_rc ( amin, bmin, arg, status, value )
+ 
+         if ( status < 0 ) then
+           write ( *, '(a)' ) ' '
+           write ( *, '(a)' ) 'TEST_LOCAL_MIN_RC_ONE - Fatal error!'
+           write ( *, '(a)' ) '  LOCAL_MIN_RC returned negative status.'
+           exit
+         end if
+
+         value = minifunc ( arg )
+
+         stepmin = stepmin + 1
+         if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
+
+         if ( status == 0 ) then
+           exit
+         end if 
+
        end do
+       call cpu_time(time2)
+       CP%beta_dhost = arg
+       call deinterface(CP,diff)
+       call getH(1._dl,finalhubble)
+
+       if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
+       if (mindebug) write(*,*) 'input H0                        =',CP%H0
+       if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
+       if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
+       if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
+       if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
+       if (mindebug) write(*,*) 'number of iterations needed     =',stepmin
+       if (mindebug) write(*,*) 'elapsed time (seconds)          =',time2-time1
+       if (mindebug) write(*,*) '---------------------------------'
+
     else
        call deinterface(CP,diff)
-    end if
+    end if   
 
-!    if (mindebug) then
-!       open(42,file='dtauda.dat')
-!       do debug_i=1,10000
-!          debug_a = 1.e-6 + (debug_i-1)*(1._dl-1.e-6)/9999
-!          write(42,*) -1+1/debug_a, dtauda(debug_a)
-!       end do
-!       close(42)
-!       stop
-!    end if
-
+stop
     !-------------------------------------------------------------------
 
     end  subroutine init_background
+
+    function minifunc(x)
+    use initsolver
+    implicit none
+    integer n
+    real(dl) minifunc, diff
+    real(dl) x
+
+    CP%beta_dhost = x
+
+    call deinterface(CP,diff)
+    minifunc=diff
+
+
+    return
+
+    end function minifunc
+
+
 
     !Background evolution
     function dtauda(a)

@@ -96,7 +96,7 @@ class SharedLibrary(build, object):
             FFLAGS = "-shared -static -cpp -fopenmp -O3 -ffast-math -fmax-errors=4"
             if is32Bit: FFLAGS = "-m32 " + FFLAGS
             SOURCES = "constants.f90 utils.f90 subroutines.f90 inifile.f90 power_tilt.f90 recfast.f90 reionization.f90" \
-                      " modules.f90 bessels.f90 initsolver.f90 equations.f90 halofit_ppf.f90 lensing.f90 SeparableBispectrum.f90 cmbmain.f90" \
+                      " modules.f90 bessels.f90 tools_minimizer.f90 initsolver.f90 equations.f90 halofit_ppf.f90 lensing.f90 SeparableBispectrum.f90 cmbmain.f90" \
                       " camb.f90 camb_python.f90"
             OUTPUT = r"-o %s\camb\%s" % (pycamb_path, DLLNAME)
             scrs = os.listdir(os.getcwd())
