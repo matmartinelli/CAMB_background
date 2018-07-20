@@ -96,7 +96,6 @@
 
     real(dl) :: condreal                      !beta>condreal gives complex initial conditions
 
-
     if (CP%minimizeme) then
        condreal = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost
   
@@ -104,7 +103,7 @@
 
        !MMchange: setting the lower limit for the interval
        if (condreal.gt.0._dl) then
-          aa = -0.5*condreal
+          aa = -5*condreal
        else
           aa = 2.*condreal
        end if
@@ -160,17 +159,17 @@
        if (mindebug) write(*,*) 'input H0                        =',CP%H0
        if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
        if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
-       if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
+       !if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
        if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
        if (mindebug) write(*,*) 'number of iterations needed     =',stepmin
        if (mindebug) write(*,*) 'elapsed time (seconds)          =',time2-time1
        if (mindebug) write(*,*) '---------------------------------'
-
+       !if (mindebug) stop
     else
        call deinterface(CP,diff)
     end if   
 
-stop
+!stop
     !-------------------------------------------------------------------
 
     end  subroutine init_background
