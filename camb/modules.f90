@@ -407,13 +407,17 @@
 
     if (.not.call_again) then
         call init_massive_nu(CP%omegan /=0)
-        call init_background(error)
+        call init_background
         if (global_error_flag==0) then
             CP%tau0=TimeOfz(0._dl)
             ! print *, 'chi = ',  (CP%tau0 - TimeOfz(0.15_dl)) * CP%h0/100
             last_tau0=CP%tau0
             if (WantReion) call Reionization_Init(CP%Reion,CP%ReionHist, CP%YHe, akthom, CP%tau0, FeedbackLevel)
-        end if
+        else !MMmod: DHOST
+            global_error_message      = 'DHOST: failed minimization for H0'
+            if (present(error)) error = global_error_flag
+            return
+       end if
     else
         CP%tau0=last_tau0
     end if

@@ -1224,6 +1224,9 @@
 
         jla_LnLike=JLA_alpha_beta_like(alpha, beta, lumdists)
     end if
+!MMtest
+write(*,*) 'JLA_LNLIKE=',jla_LnLike
+!stop
 
     END FUNCTION jla_LnLike
 

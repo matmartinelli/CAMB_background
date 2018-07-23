@@ -64,7 +64,7 @@ subroutine deinterface(CP,diff)
       if (allocated(tempz) .eqv. .false.) allocate(tempz(nsteps), temp1(nsteps), temp2(nsteps),temp3(nsteps))
 
 
-      !setting initial conditions for rho_m and Psi at z=initial_z-------------------------------------------
+       !setting initial conditions for rho_m and Psi at z=initial_z-------------------------------------------
       if (9*CP%c3_dhost**2.-48*CP%c2_dhost*CP%c4_dhost-9*CP%beta_dhost*CP%c2_dhost.lt.0._dl) then
          write(*,*) 'COMPLEX INITIAL CONDITION!!!'
          diff = 1000._dl
