@@ -123,6 +123,12 @@ subroutine deinterface(CP,diff)
       !Computing H(z)-H0 to be passed to the minimizer
       diff = abs(CP%H0-ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)) 
 
+      if (diff.ne.diff) then
+         write(*,*) 'WTFF?'
+         write(*,*) 'H=',ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)
+         write(*,*) 'WTFF?'
+         stop
+      end if
       
       if (debugging) write(*,*) 'checking obtained parameters at z=0'
       if (debugging) write(*,*) 'H(z=0) =',ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)

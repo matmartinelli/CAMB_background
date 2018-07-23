@@ -51,7 +51,7 @@ DL_dhost_nomin = results_nomin.luminosity_distance(z)
 #Set up a new set of parameters for CAMB
 pars = camb.CAMBparams()
 #This function sets up CosmoMC-like settings, with one massive neutrino and helium set using BBN consistency
-pars.set_cosmology(H0=70.0, ombh2=0.0226, omch2=0.122, mnu=0.06, omk=0, tau=0.06, c2_dhost=3.0, c3_dhost=5.0, c4_dhost=1.0, beta_dhost=-5.3, inired=0.0)
+pars.set_cosmology(H0=70.0, ombh2=0.0226, omch2=0.112, mnu=0.06, omk=0, tau=0.06, c2_dhost=3.0, c3_dhost=5.0, c4_dhost=1.0, beta_dhost=-5.3, inired=0.0)
 pars.InitPower.set_params(ns=0.965, r=0, As=2e-9)
 pars.set_for_lmax(2500, lens_potential_accuracy=0);
 pars.minimizeme = False
@@ -74,6 +74,7 @@ plt.plot(z, DA_dhost_nomin, color='#FFB300', ls='--', label=r'DHOST unminimized 
 plt.xlabel('$z$')
 plt.ylabel(r'$D_A /\rm{Mpc}$')
 plt.title('Angular diameter distance')
+plt.xlim([0,4])
 plt.ylim([0,2500]);
 plt.legend(loc='lower right', fontsize='small');
 plt.savefig('da_dhost.pdf')
@@ -87,9 +88,9 @@ plt.plot(z, H_dhost_nomin, color='#FFB300', ls='--', label=r'DHOST unminimized (
 plt.xlabel('$z$')
 plt.ylabel(r'$H(z)\ {\rm km}/{\rm s}/{\rm Mpc}$')
 plt.title('Hubble parameter')
-#plt.ylim([0,2500]);
+#plt.xlim([0,2500]);
 plt.legend(loc='lower right', fontsize='small');
-plt.savefig('da_dhost.pdf')
+plt.savefig('H_dhost.pdf')
 plt.show()
 
 #Plots and stuff
@@ -99,6 +100,7 @@ plt.plot(z, DL_dhost_nomin, color='#FFB300', ls='--', label=r'DHOST unminimized 
 plt.xlabel('$z$')
 plt.ylabel(r'$D_L /\rm{Mpc}$')
 plt.title('Luminosity distance')
+plt.xlim([0,4])
 #plt.ylim([0,2500]);
 plt.legend(loc='lower right', fontsize='small');
 plt.savefig('lumdis_dhost.pdf')

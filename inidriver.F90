@@ -55,6 +55,9 @@
     P%WantVectors = Ini_Read_Logical('get_vector_cls',.false.)
     P%WantTensors = Ini_Read_Logical('get_tensor_cls',.false.)
 
+    !MMmod: DHOST
+    P%minimizeme  = Ini_Read_Logical('minimizem_dhost',.true.)
+    write(*,*) P%minimizeme
     P%OutputNormalization=outNone
     output_factor = Ini_Read_Double('CMB_outputscale',1.d0)
 

@@ -80,7 +80,6 @@
     !
     !For an explanation of the variables and methods look at:
     !https://people.sc.fsu.edu/~jburkardt/f_src/brent/brent.html
-
     logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
     real(dl)            :: diff               !difference between H0 and computed H(z=0)
     real(dl)            :: time1, time2       !variables for time computation
@@ -141,7 +140,12 @@
          end if
 
          value = minifunc ( arg )
-
+      if (diff.ne.diff) then
+         write(*,*) 'WTFF? in eqs'
+         write(*,*) 'H=',ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)
+         write(*,*) 'WTFF?'
+         stop
+      end if
          stepmin = stepmin + 1
          if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
 
@@ -168,8 +172,6 @@
     else
        call deinterface(CP,diff)
     end if   
-
-!stop
     !-------------------------------------------------------------------
 
     end  subroutine init_background
@@ -230,7 +232,7 @@
     !Getting our modified Hubble for z<z_ini
     !Standard one, computed above for z>z_ini
     !WARNING!!! I think we don't have neutrinos here!
-    if (a.lt.1/(1+CP%inired)) then
+    if ((a.le.1/(1+CP%inired)).or.(CP%inired.eq.0._dl)) then
        dtauda=sqrt(3/grhoa2)
     else
        call getH(a,myhubble)
