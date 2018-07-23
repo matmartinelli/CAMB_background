@@ -250,7 +250,7 @@
 
        !MMchange: setting the lower limit for the interval
 call cpu_time(time1)
-!do iter=1,maxiter
+do iter=1,maxiter
        if (condreal.gt.0._dl) then
           aa = -5*condreal
        else
@@ -304,20 +304,20 @@ call cpu_time(time1)
        call deinterface(CP,diff)
        call getH(1._dl,finalhubble)
 
-       !if (diff.le.minitol) then
-       !   exit
-       !else 
-       !   amin = amin + (bb-aa)*0.01
-       !end if
+       if (diff.le.minitol) then
+          exit
+       else 
+          amin = amin + (bb-aa)*0.01
+       end if
 
-       !if (iter.eq.maxiter) then
-       if (diff.gt.minitol) then
+       if (iter.eq.maxiter) then
+       !if (diff.gt.minitol) then
           global_error_flag         = 1
           global_error_message      = 'DHOST: H0 minimization failed'
           return
        end if
 
-!end do
+end do
 call cpu_time(time2)
        if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
        if (mindebug) write(*,*) 'input H0                        =',CP%H0

@@ -276,7 +276,6 @@
     integer, optional :: error
 
 
-write(*,*) 'DIO CINGHIALE'
     if (firsttime) then
         CMB%reserved = 0
         CMB%ombh2 = Params(1)
