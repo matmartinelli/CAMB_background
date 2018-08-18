@@ -223,12 +223,12 @@
     !For an explanation of the variables and methods look at:
     !https://people.sc.fsu.edu/~jburkardt/f_src/brent/brent.html
 
-    logical, parameter  :: mindebug = .false. !if set to true prints a bunch of info on the minimization process
+    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
     real(dl)            :: diff               !difference between H0 and computed H(z=0)
     real(dl)            :: time1, time2       !variables for time computation
     real(dl)            :: finalhubble        !H(z=0) after minizer
     !BRENT variables
-    real(dl)            :: aa,amin
+    real(dl)            :: aa,amin, aastep
     real(dl)            :: bb,bmin
     real(dl), external  :: minifunc
     real(dl)            :: value
@@ -239,23 +239,32 @@
     real(dl) :: condreal                      !beta>condreal gives complex initial conditions
     logical, parameter  :: minimizeme = .true.
     integer  :: iter
-    integer, parameter :: maxiter = 100
+    integer, parameter :: maxiter = 1
     real(dl), parameter :: minitol = 0.01
 
 
     if (minimizeme) then
        condreal = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost
 
-       bb = condreal-0.01  !upper limit of the minimizing interval
-
+       bb = condreal-0.0001  !upper limit of the minimizing interval
        !MMchange: setting the lower limit for the interval
 call cpu_time(time1)
+!       if (condreal.gt.0._dl) then
+!          aa = -5*bb
+!       else
+!          aa = 2.*bb
+!       end if
+       aa = -10._dl
+       aastep = (bb - aa)/maxiter
+
+       if (mindebug) open(34,file='H0_beta.dat') 
+
 do iter=1,maxiter
-       if (condreal.gt.0._dl) then
-          aa = -5*condreal
-       else
-          aa = 2.*condreal
-       end if
+!       if (condreal.gt.0._dl) then
+!          aa = -5*bb
+!       else
+!          aa = 2.*bb
+!       end if
 
        if (mindebug) then
           write ( *, '(a)' ) ' '
@@ -266,20 +275,19 @@ do iter=1,maxiter
        end if
        stepmin = 0
 
-       arg = aa
+       arg = bb-iter*aastep
        value = minifunc ( arg )
        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
-
        arg = bb
        value = minifunc ( arg )
        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
 
-       amin = aa
+       amin = bb-iter*aastep
        bmin = bb
        status = 0
 
        do
-
+       
          call local_min_rc ( amin, bmin, arg, status, value )
 
          if ( status < 0 ) then
@@ -290,10 +298,11 @@ do iter=1,maxiter
          end if
 
          value = minifunc ( arg )
-
+         write(*,*) 'atleast this?'!,value,minifunc(arg)
          stepmin = stepmin + 1
          if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
-
+         if (mindebug) write (34, *) arg,value
+         if (mindebug) write ( *,*)'-----------------------------------------------------------------'
          if ( status == 0 ) then
            exit
          end if
@@ -307,17 +316,20 @@ do iter=1,maxiter
        if (diff.le.minitol) then
           exit
        else 
-          amin = amin + (bb-aa)*0.01
+       !   aa = aa - (bb-aa)*0.1
+       !   !bb = aa!CP%beta_dhost
+          if (mindebug) write(*,*) 'diff not within tol, doing another round.',iter,maxiter
        end if
 
-       if (iter.eq.maxiter) then
-       !if (diff.gt.minitol) then
+       !if (iter.eq.maxiter) then
+       if (diff.gt.minitol) then
           global_error_flag         = 1
           global_error_message      = 'DHOST: H0 minimization failed'
           return
        end if
 
 end do
+       if (mindebug) close(34)
 call cpu_time(time2)
        if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
        if (mindebug) write(*,*) 'input H0                        =',CP%H0
@@ -350,8 +362,8 @@ call cpu_time(time2)
 
     call deinterface(CP,diff)
     minifunc=diff
-
-
+    write(*,*) 'step',minifunc
+    if (isnan(minifunc)) write(0,*) 'why only here?'
     return
 
     end function minifunc
