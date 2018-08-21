@@ -223,7 +223,7 @@
     !For an explanation of the variables and methods look at:
     !https://people.sc.fsu.edu/~jburkardt/f_src/brent/brent.html
 
-    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
+    logical, parameter  :: mindebug = .false. !if set to true prints a bunch of info on the minimization process
     real(dl)            :: diff               !difference between H0 and computed H(z=0)
     real(dl)            :: time1, time2       !variables for time computation
     real(dl)            :: finalhubble        !H(z=0) after minizer
@@ -249,13 +249,13 @@
        bb = condreal-0.0001  !upper limit of the minimizing interval
        !MMchange: setting the lower limit for the interval
 call cpu_time(time1)
-!       if (condreal.gt.0._dl) then
-!          aa = -5*bb
-!       else
-!          aa = 2.*bb
-!       end if
-       aa = -10._dl
-       aastep = (bb - aa)/maxiter
+       if (condreal.gt.0._dl) then
+          aa = -5*bb
+       else
+          aa = 2.*bb
+       end if
+!       aa = -10._dl
+!       aastep = (bb - aa)/maxiter
 
        if (mindebug) open(34,file='H0_beta.dat') 
 
@@ -275,15 +275,16 @@ do iter=1,maxiter
        end if
        stepmin = 0
 
-       arg = bb-iter*aastep
+       arg = aa!bb-iter*aastep
        value = minifunc ( arg )
        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
        arg = bb
        value = minifunc ( arg )
        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
 
-       amin = bb-iter*aastep
+       amin = aa!bb-iter*aastep
        bmin = bb
+write(*,*) '------------EXTREMES----------',amin,bmin
        status = 0
 
        do
@@ -296,9 +297,7 @@ do iter=1,maxiter
            write ( *, '(a)' ) '  LOCAL_MIN_RC returned negative status.'
            exit
          end if
-
          value = minifunc ( arg )
-         write(*,*) 'atleast this?'!,value,minifunc(arg)
          stepmin = stepmin + 1
          if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
          if (mindebug) write (34, *) arg,value
@@ -317,7 +316,7 @@ do iter=1,maxiter
           exit
        else 
        !   aa = aa - (bb-aa)*0.1
-       !   !bb = aa!CP%beta_dhost
+          bb = bb-iter*aastep!CP%beta_dhost
           if (mindebug) write(*,*) 'diff not within tol, doing another round.',iter,maxiter
        end if
 
@@ -362,8 +361,6 @@ call cpu_time(time2)
 
     call deinterface(CP,diff)
     minifunc=diff
-    write(*,*) 'step',minifunc
-    if (isnan(minifunc)) write(0,*) 'why only here?'
     return
 
     end function minifunc

@@ -15,7 +15,7 @@ real(dl), dimension(:),allocatable :: tempz, temp1, temp2, temp3  !temporary arr
 real(dl), dimension(:),allocatable :: b1, c1, d1, b2, c2, d2      !coefficient of polynomial for interpolation
 real(dl), dimension(:),allocatable :: bh, ch, dh
 
-logical                            :: debugging = .true.         !if T prints some files to check solver
+logical                            :: debugging = .false.         !if T prints some files to check solver
 
 
 
@@ -123,7 +123,6 @@ subroutine deinterface(CP,diff)
 
       !Computing H(z)-H0 to be passed to the minimizer
       diff = abs(CP%H0-ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)) 
-      write(*,*) 'THERE IS A NaN!', CP%H0, ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)
       
       if (debugging) write(*,*) 'checking obtained parameters at z=0'
       if (debugging) write(*,*) 'H(z=0) =',ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)
