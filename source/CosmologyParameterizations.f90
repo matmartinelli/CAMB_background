@@ -322,7 +322,6 @@
         CMB%c2_dhost = Params(17)
         CMB%c3_dhost = Params(18)
         CMB%c4_dhost = Params(19)
-        CMB%beta_dhost = -5.3!MMtemp
         !-----------------------
         call SetFast(Params,CMB)
     end if

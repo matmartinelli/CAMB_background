@@ -40,6 +40,7 @@
     real(dl) rde(nde),ade(nde),ddrde(nde)
     real(dl), parameter :: amin = 1.d-9
     logical :: is_cosmological_constant
+    real(dl) :: betatocosmo
     private nde,ddw_ppf,rde,ade,ddrde,amin
     contains
 
@@ -313,6 +314,7 @@ write(*,*) '------------EXTREMES----------',amin,bmin
        call getH(1._dl,finalhubble)
 
        if (diff.le.minitol) then
+          betatocosmo = CP%beta_dhost
           exit
        else 
        !   aa = aa - (bb-aa)*0.1
@@ -322,6 +324,7 @@ write(*,*) '------------EXTREMES----------',amin,bmin
 
        !if (iter.eq.maxiter) then
        if (diff.gt.minitol) then
+          betatocosmo = 666._dl
           global_error_flag         = 1
           global_error_message      = 'DHOST: H0 minimization failed'
           return
