@@ -96,7 +96,7 @@
     real(dl) :: condreal                      !beta>condreal gives complex initial conditions
 
     if (CP%minimizeme) then
-       condreal = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost
+       condreal = (CP%c3_dhost**2./(2.*CP%c2_dhost))-(8./3.)*CP%c4_dhost
   
        bb = condreal-0.01  !upper limit of the minimizing interval
 
