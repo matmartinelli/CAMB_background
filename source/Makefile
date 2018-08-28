@@ -45,7 +45,7 @@ FFLAGS+=  -axAVX,SEE4.2 -static-intel
 else
 ifneq ($(HOSTNAME),apollo-login)
 #Remove this if your cluster is not uniform (different CPUs)
-FFLAGS += -xHost
+FFLAGS +=
 endif
 endif
 endif

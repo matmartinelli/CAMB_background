@@ -39,6 +39,7 @@
     use IniFile
     Type(TIniFile) :: Ini
 
+
     w_lam = Ini_Read_Double_File(Ini,'w', -1.d0)
     cs2_lam = Ini_Read_Double_File(Ini,'cs2_lam',1.d0)
 
@@ -62,20 +63,152 @@
     !This is only called once per model, and is a good point to do any extra initialization.
     !It is called before first call to dtauda, but after
     !massive neutrinos are initialized and after GetOmegak
+
+    use LambdaGeneral
+
+    !MMmod: DHOST---------------------------------------------------------
+    use initsolver
+    use minitools  !New module for BRENT minimization
+    implicit none
+
+    !MINIMIZATION PARAMETERS:
+    !This part is needed to get the modified DHOST background to obtain the
+    !same H0 we input from CAMB
+    !
+    !Code is now using BRENT minimization library
+    !This library has been added through a new module minitools in tools_minimizer.f90
+    !
+    !For an explanation of the variables and methods look at:
+    !https://people.sc.fsu.edu/~jburkardt/f_src/brent/brent.html
+    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
+    real(dl)            :: diff               !difference between H0 and computed H(z=0)
+    real(dl)            :: time1, time2       !variables for time computation
+    real(dl)            :: finalhubble        !H(z=0) after minizer
+    !BRENT variables
+    real(dl)            :: aa,amin
+    real(dl)            :: bb,bmin
+    real(dl), external  :: minifunc
+    real(dl)            :: value
+    integer             :: status
+    integer             :: stepmin
+    real(dl)            :: arg
+
+    real(dl) :: condreal                      !beta>condreal gives complex initial conditions
+
+    if (CP%minimizeme) then
+       condreal = (CP%c3_dhost**2./(2.*CP%c2_dhost))-(8./3.)*CP%c4_dhost
+  
+       bb = condreal  !upper limit of the minimizing interval
+
+       !MMchange: setting the lower limit for the interval
+       if (condreal.gt.0._dl) then
+          aa = -5*condreal
+       else
+          aa = 2.*condreal
+       end if
+
+       if (mindebug) then
+          write ( *, '(a)' ) ' '
+          write ( *, '(a)' ) ' '
+          write ( *, '(a)' ) ' '
+          write ( *, '(a)' ) '  Step      X                          F(X)'
+          write ( *, '(a)' ) ' '
+       end if
+       stepmin = 0
+
+       arg = aa
+       value = minifunc ( arg )
+       if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
+
+       arg = bb
+       value = minifunc ( arg )
+       if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
+
+       amin = aa
+       bmin = bb
+       status = 0
+
+       do
+
+         call local_min_rc ( amin, bmin, arg, status, value )
+ 
+         if ( status < 0 ) then
+           write ( *, '(a)' ) ' '
+           write ( *, '(a)' ) 'TEST_LOCAL_MIN_RC_ONE - Fatal error!'
+           write ( *, '(a)' ) '  LOCAL_MIN_RC returned negative status.'
+           exit
+         end if
+
+         value = minifunc ( arg )
+      if (diff.ne.diff) then
+         write(*,*) 'WTFF? in eqs'
+         write(*,*) 'H=',ispline(0._dl, z_ode, solH, bh, ch, dh, nsteps)
+         write(*,*) 'WTFF?'
+         stop
+      end if
+         stepmin = stepmin + 1
+         if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
+
+         if ( status == 0 ) then
+           exit
+         end if 
+
+       end do
+       call cpu_time(time2)
+       CP%beta_dhost = arg
+       call deinterface(CP,diff)
+       call getH(1._dl,finalhubble)
+
+       if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
+       if (mindebug) write(*,*) 'input H0                        =',CP%H0
+       if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
+       if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
+       !if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
+       if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
+       if (mindebug) write(*,*) 'number of iterations needed     =',stepmin
+       if (mindebug) write(*,*) 'elapsed time (seconds)          =',time2-time1
+       if (mindebug) write(*,*) '---------------------------------'
+       !if (mindebug) stop
+    else
+       call deinterface(CP,diff)
+    end if   
+    !-------------------------------------------------------------------
+
     end  subroutine init_background
+
+    function minifunc(x)
+    use initsolver
+    implicit none
+    integer n
+    real(dl) minifunc, diff
+    real(dl) x
+
+    CP%beta_dhost = x
+
+    call deinterface(CP,diff)
+    minifunc=diff
+
+
+    return
+
+    end function minifunc
+
 
 
     !Background evolution
     function dtauda(a)
     !get d tau / d a
     use precision
+    use constants !MMmod: DHOST
     use ModelParams
     use MassiveNu
     use LambdaGeneral
+    use initsolver !MMmod: DHOST
     implicit none
     real(dl) dtauda
     real(dl), intent(IN) :: a
     real(dl) rhonu,grhoa2, a2
+    real(dl) myhubble !MMmod: DHOST rho_DE
     integer nu_i
 
     a2=a**2
@@ -95,9 +228,22 @@
         end do
     end if
 
-    dtauda=sqrt(3/grhoa2)
+    !MMmod: DHOST----------------------------------
+    !Getting our modified Hubble for z<z_ini
+    !Standard one, computed above for z>z_ini
+    !WARNING!!! I think we don't have neutrinos here!
+    if ((a.le.1/(1+CP%inired)).or.(CP%inired.eq.0._dl)) then
+       dtauda=sqrt(3/grhoa2)
+    else
+       call getH(a,myhubble)
+       !myhubble is cosmic and in km/Mpc/s units
+       !converted here to be consistent with dtauda
+       dtauda = 1/(a**2._dl*myhubble*1.e3/c)
+    end if
+    !----------------------------------------------
 
     end function dtauda
+    
 
     !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
