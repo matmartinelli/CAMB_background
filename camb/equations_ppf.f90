@@ -40,7 +40,7 @@
     real(dl) rde(nde),ade(nde),ddrde(nde)
     real(dl), parameter :: amin = 1.d-9
     logical :: is_cosmological_constant
-    real(dl) :: betatocosmo
+    real(dl) savebetadhost !MMtest
     private nde,ddw_ppf,rde,ade,ddrde,amin
     contains
 
@@ -237,7 +237,7 @@
     integer             :: stepmin
     real(dl)            :: arg
 
-    real(dl) :: condreal                      !beta>condreal gives complex initial conditions
+    real(dl) :: condrealmat, condrealds, condreal   !beta>condreal gives complex initial conditions
     logical, parameter  :: minimizeme = .true.
     integer  :: iter
     integer, parameter :: maxiter = 1
@@ -245,9 +245,12 @@
 
 
     if (minimizeme) then
-       condreal = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost
+       condrealmat = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost !Real xi in matter era
+       condrealds = (CP%c3_dhost**2./(2.*CP%c2_dhost))-(8./3.)*CP%c4_dhost !Real xi in de Sitter
 
-       bb = condreal-0.0001  !upper limit of the minimizing interval
+       condreal = min(condrealmat,condrealds)
+
+       bb = condreal  !upper limit of the minimizing interval
        !MMchange: setting the lower limit for the interval
 call cpu_time(time1)
        if (condreal.gt.0._dl) then
@@ -260,7 +263,7 @@ call cpu_time(time1)
 
        if (mindebug) open(34,file='H0_beta.dat') 
 
-do iter=1,maxiter
+!do iter=1,maxiter
 !       if (condreal.gt.0._dl) then
 !          aa = -5*bb
 !       else
@@ -285,7 +288,7 @@ do iter=1,maxiter
 
        amin = aa!bb-iter*aastep
        bmin = bb
-write(*,*) '------------EXTREMES----------',amin,bmin
+!write(*,*) '------------EXTREMES----------',amin,bmin
        status = 0
 
        do
@@ -313,24 +316,17 @@ write(*,*) '------------EXTREMES----------',amin,bmin
        call deinterface(CP,diff)
        call getH(1._dl,finalhubble)
 
-       if (diff.le.minitol) then
-          betatocosmo = CP%beta_dhost
-          exit
-       else 
-       !   aa = aa - (bb-aa)*0.1
-          bb = bb-iter*aastep!CP%beta_dhost
-          if (mindebug) write(*,*) 'diff not within tol, doing another round.',iter,maxiter
-       end if
 
        !if (iter.eq.maxiter) then
        if (diff.gt.minitol) then
-          betatocosmo = 666._dl
           global_error_flag         = 1
           global_error_message      = 'DHOST: H0 minimization failed'
           return
        end if
 
-end do
+       savebetadhost = CP%beta_dhost
+
+!end do
        if (mindebug) close(34)
 call cpu_time(time2)
        if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'

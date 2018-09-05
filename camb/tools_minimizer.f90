@@ -638,7 +638,7 @@ subroutine local_min_rc ( a, b, arg, status, value )
     c = 0.5D+00 * ( 3.0D+00 - sqrt ( 5.0D+00 ) )
 
     eps = sqrt ( epsilon ( eps ) )
-    tol = epsilon ( tol )
+    tol = 1.e-20!epsilon ( tol )
 
     v = a + c * ( b - a )
     w = v

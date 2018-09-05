@@ -171,6 +171,7 @@
     end function GetYPBBN
 
     subroutine TP_CalcDerivedParams(this, P, Theory, derived)
+    use CAMB, only : savebetadhost
     class(ThetaParameterization) :: this
     real(mcp), allocatable :: derived(:)
     class(TTheoryPredictions), allocatable :: Theory
@@ -204,7 +205,7 @@
         derived(11) = Theory%Lensing_rms_deflect
         derived(12) = CMB%zre
         !MMmod: DHOST-----------
-        derived(14) = CMB%beta_dhost
+        derived(14) = savebetadhost
         ix=14
         !-----------------------
         derived(ix) = cl_norm*CMB%InitPower(As_index)*1e9
