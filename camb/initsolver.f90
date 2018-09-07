@@ -35,7 +35,7 @@ out_hubble = ispline(z, z_ode, solH, bh, ch, dh, nsteps)
 
 end subroutine getH
 
-subroutine deinterface(omegade,acca0,diff)
+subroutine deinterface(CP,diff)
       Type(CAMBparams) CP
       integer, parameter      :: n = 1                          !number of dependent variables (-1)
       real, dimension(0:n)    :: x                              !dependent variables: rho_m, Psi
@@ -48,11 +48,9 @@ subroutine deinterface(omegade,acca0,diff)
       real(dl)                :: zp, zm, dz, fplus, fminus, integral
       real(dl)                :: xi_dhost
       real(dl)                :: aini, a0
-      real(dl)                :: diff,omegade,acca0
+      real(dl)                :: diff
 
 
-      CP%omegav = omegade
-      CP%H0 = acca0
 
       !initializing global ODE solver parameters from CAMB
       initial_z = CP%inired

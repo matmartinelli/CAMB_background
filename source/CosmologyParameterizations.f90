@@ -367,70 +367,18 @@
 
     select type (CMB)
     class is (CMBParams)
-!        omegam = Params(1)
-        CMB%H0 = Params(1)
-        CMB%omk = Params(2)
-        CMB%omnuh2=Params(3)/neutrino_mass_fac*(standard_neutrino_neff/3)**0.75_mcp
-        CMB%w =    Params(4)
-        CMB%wa =    Params(5)
-        CMB%nnu =    Params(6)
+        omegam = Params(1)
+        CMB%H0 = Params(2)
+        CMB%omk = Params(3)
+        CMB%omnuh2=Params(4)/neutrino_mass_fac*(standard_neutrino_neff/3)**0.75_mcp
+        CMB%w =    Params(5)
+        CMB%wa =    Params(6)
+        CMB%nnu =    Params(7)
         !MMmod: DHOST
-        CMB%c2_dhost = Params(7)
-        CMB%c3_dhost = Params(8)
-        CMB%c4_dhost = Params(9)        
-        CMB%beta_dhost = Params(10)
+        CMB%c2_dhost = Params(8)
+        CMB%c3_dhost = Params(9)
+        CMB%c4_dhost = Params(10)        
 
-        !HERE GET REAL H0
-        bb = 1._mcp-CMB%omk  !upper limit of the minimizing interval
-        aa = 0._mcp
-
-        if (mindebug) then
-           write ( *, '(a)' ) ' '
-           write ( *, '(a)' ) ' '
-           write ( *, '(a)' ) ' '
-           write ( *, '(a)' ) '  Step      X                          F(X)'
-           write ( *, '(a)' ) ' '
-        end if
-        stepmin = 0
-
-        arg = aa
-        call minifunc ( arg , CMB%H0, value)
-        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
-
-        arg = bb
-        call minifunc ( arg , CMB%H0, value)
-        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
-
-        amin = aa
-        bmin = bb
-        status = 0
-
-        do
-
-          call local_min_rc ( amin, bmin, arg, status, value )
-
-          if ( status < 0 ) then
-            write ( *, '(a)' ) ' '
-            write ( *, '(a)' ) 'TEST_LOCAL_MIN_RC_ONE - Fatal error!'
-            write ( *, '(a)' ) '  LOCAL_MIN_RC returned negative status.'
-            exit
-          end if
-
-          call minifunc ( arg , CMB%H0, value)
-          stepmin = stepmin + 1
-          if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
-
-          if ( status == 0 ) then
-            exit
-          end if
-
-        end do
-        omegam = arg
-   
-        call getH(1._dl,finalhubble)
-        if (mindebug) write(*,*) 'hubbles=',CMB%H0,finalhubble
-        if (mindebug) write(*,*) 'omegam=',omegam
-        if (mindebug) stop
 
         CMB%h=CMB%H0/100
         h2 = CMB%h**2
@@ -453,20 +401,6 @@
     end select
     end subroutine BK_ParamArrayToTheoryParams
 
-    subroutine minifunc(x,h,value)
-    use initsolver
-    implicit none
-    integer n
-    real(dl) diff
-    real(dl) x,h,value
-
-    call deinterface(1-x,h,diff)
-    value=diff
-
-
-    return
-
-    end subroutine minifunc
 
     subroutine BK_CalcDerivedParams(this, P, Theory, derived)
     class(BackgroundParameterization) :: this
@@ -475,12 +409,11 @@
     real(mcp) :: P(:)
     Type(CMBParams) CMB
 
-    allocate(Derived(2))
+    allocate(Derived(1))
 
     call this%ParamArrayToTheoryParams(P,CMB)
 
     derived(1) = CMB%omv
-    derived(2) = CMB%H0
 
     end subroutine BK_CalcDerivedParams
 

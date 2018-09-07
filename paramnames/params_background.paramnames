@@ -1,4 +1,5 @@
-H0*           H_0
+omegam        \Omega_m
+H0            H_0
 omegak        \Omega_K
 mnu           \Sigma m_\nu		
 w             w			#equation of state parameter for scalar field dark energy today
@@ -7,6 +8,4 @@ nnu           N_{eff}   #effective number of neutrinos (only clearly defined for
 c2dhost       c_2
 c3dhost       c_3
 c4dhost       c_4
-betadhost     \beta
 omegal*       \Omega_\Lambda
-omegam*        \Omega_m
