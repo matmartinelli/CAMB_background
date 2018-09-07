@@ -281,11 +281,15 @@
     if (present(error)) error = global_error_flag
     if (global_error_flag/=0) return
 
-    if (present(DoReion)) then
-        WantReion = DoReion
-    else
-        WantReion = .true.
-    end if
+    !MMmod: DHOST
+    !if (present(DoReion)) then
+    !    WantReion = DoReion
+    !else
+    !    WantReion = .true.
+    !end if
+
+    WantReion = .false.
+
 
     CP=P
     if (call_again) CP%DerivedParameters = .false.
@@ -412,6 +416,7 @@
             CP%tau0=TimeOfz(0._dl)
             ! print *, 'chi = ',  (CP%tau0 - TimeOfz(0.15_dl)) * CP%h0/100
             last_tau0=CP%tau0
+            write(*,*)'mattest',WantReion
             if (WantReion) call Reionization_Init(CP%Reion,CP%ReionHist, CP%YHe, akthom, CP%tau0, FeedbackLevel)
         else !MMmod: DHOST
             global_error_message      = 'DHOST: failed minimization for H0'
