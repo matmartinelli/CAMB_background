@@ -404,11 +404,10 @@ write(0,*) 'final=',BAO_DR1x_loglike,logZero
     real(mcp) BAO_MGS_loglike
     real (mcp) alphamgs, chi2
     real(mcp),parameter :: rsfidmgs = 148.69_mcp, DVfidmgs = 638.9518_mcp
-    real(mcp), parameter :: alpha_min=0.8005_mcp, alpha_max = 2.1985_mcp
+    real(mcp), parameter :: alpha_min=0.8005_mcp, alpha_max = 1.1985_mcp
     integer ii
-write(0,*)'MGS'
+
     alphamgs =   this%Calculator%BAO_D_v(this%bao_z(1))/this%get_rs_drag(Theory) / (DVfidmgs / rsfidmgs)
-write(0,*) alpha_min,alphamgs,alpha_max
     if ((alphamgs > alpha_max).or.(alphamgs < alpha_min)) then
         BAO_MGS_loglike = logZero
     else
