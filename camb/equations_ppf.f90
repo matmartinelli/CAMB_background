@@ -244,6 +244,8 @@
     real(dl), parameter :: minitol = 0.01
 
 
+    global_error_flag= 0
+
     if (minimizeme) then
        condrealmat = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost !Real xi in matter era
        condrealds = (CP%c3_dhost**2./(2.*CP%c2_dhost))-(8./3.)*CP%c4_dhost !Real xi in de Sitter
@@ -319,7 +321,7 @@ call cpu_time(time1)
 
        !if (iter.eq.maxiter) then
        if (diff.gt.minitol) then
-          global_error_flag         = 1
+          global_error_flag         = 17
           global_error_message      = 'DHOST: H0 minimization failed'
           return
        end if
@@ -402,14 +404,19 @@ call cpu_time(time2)
     !Getting our modified Hubble for z<z_ini
     !Standard one, computed above for z>z_ini
     !WARNING!!! I think we don't have neutrinos here!
-    if (a.lt.1/(1+CP%inired)) then
-       dtauda=sqrt(3/grhoa2)
+    if (global_error_flag .ne. 17) then
+       if (a.lt.1/(1+CP%inired)) then
+          dtauda=sqrt(3/grhoa2)
+       else
+          call getH(a,myhubble)
+          !myhubble is cosmic and in km/Mpc/s units
+          !converted here to be consistent with dtauda
+          dtauda = 1/(a**2._dl*myhubble*1.e3/c)
+       end if
     else
-       call getH(a,myhubble)
-       !myhubble is cosmic and in km/Mpc/s units
-       !converted here to be consistent with dtauda
-       dtauda = 1/(a**2._dl*myhubble*1.e3/c)
+          dtauda = 10000._dl
     end if
+
     !----------------------------------------------
 
     end function dtauda
