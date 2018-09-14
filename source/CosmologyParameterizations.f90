@@ -398,6 +398,12 @@
         CMB%fdm=0
         CMB%iso_cdm_correlated=0
         CMB%Alens=1
+        CMB%InitPower(nrun_index:ntrun_index) = 0
+        CMB%InitPower(As_index) = 2.e-9
+        CMB%InitPower(ns_index) = 0.96
+
+!        As_index=1, ns_index =2, nrun_index=3, nrunrun_index=4, amp_ratio_index = 5, &
+!        & nt_index= 6, ntrun_index = 7
     end select
     end subroutine BK_ParamArrayToTheoryParams
 
