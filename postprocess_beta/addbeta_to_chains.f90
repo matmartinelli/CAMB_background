@@ -3,7 +3,7 @@ use minitools
 use initsolver
 implicit none
 
-integer, parameter                    :: numchains = 1
+integer, parameter                    :: numchains = 8
 integer, parameter                    :: numcolSN  = 12
 integer, parameter                    :: numcolSNBAO  = 16
 integer                               :: nlines, c2ind, c3ind,c4ind,OMind,H0ind
@@ -115,7 +115,7 @@ do j=1,nlines
    call getH(1.d0,finalhubble)
 
    incolSN(j,numcolSN+1) = betadh
-write(*,*) j, betadh
+
        !if (iter.eq.maxiter) then
    if (diff.gt.minitol) then
       write(*,*) 'THIS SHOULD NOT HAPPEN'
@@ -219,7 +219,7 @@ do j=1,nlines
    call getH(1.d0,finalhubble)
 
    incolSNBAO(j,numcolSNBAO+1) = betadh
-write(*,*) j, betadh
+
        !if (iter.eq.maxiter) then
    if (diff.gt.minitol) then
       write(*,*) 'THIS SHOULD NOT HAPPEN'

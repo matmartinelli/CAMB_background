@@ -252,7 +252,7 @@
 
        condreal = min(condrealmat,condrealds)
 
-       bb = condreal  !upper limit of the minimizing interval
+       bb = condreal-1.e-4  !upper limit of the minimizing interval
        !MMchange: setting the lower limit for the interval
 call cpu_time(time1)
        if (condreal.gt.0._dl) then
@@ -414,7 +414,7 @@ call cpu_time(time2)
           dtauda = 1/(a**2._dl*myhubble*1.e3/c)
        end if
     else
-          dtauda = 10000._dl
+          dtauda = 0._dl
     end if
 
     !----------------------------------------------

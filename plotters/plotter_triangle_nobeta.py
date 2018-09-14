@@ -17,12 +17,12 @@ import GetDistPlots
 
 import planckStyle
 
-g = planckStyle.getSinglePlotter(chain_dir = './converted_chains', ratio=1)
+g = planckStyle.getSinglePlotter(chain_dir = './chains', ratio=1)
 
 
-roots = ['JLA_DHOST_converted','JLA+BAO_DHOST_converted']
+roots = ['JLA_DHOST','JLA+BAO_DHOST']
 #roots= ['pk+BSH_varbin']
-params = ['H0','omegam','c2dhost','c3dhost','c4dhost','betadhost']
+params = ['H0','omegam','c2dhost','c3dhost','c4dhost']
 colors = ['#8E001C','#FFB300','black']
 labels = ['JLA','JLA+DR12','Planck $\Lambda$CDM']
 g.settings.solid_contour_palefactor = 0.8
@@ -30,4 +30,4 @@ g.settings.x_label_rotation = 45
 g.triangle_plot(roots, params, filled=[True,True,False], contour_colors=colors, legend_colors=colors, legend_labels=labels, legend_loc='upper right',tight_layout=True)
 #plt.title(r'$Q=3q\rho_v H$')
 #g.add_legend(labels, legend_loc='upper right',fontsize='small');#, colored_text=True);
-g.export('results_plots/trivar.pdf')
+g.export('results_plots/trivar_nobeta.pdf')
