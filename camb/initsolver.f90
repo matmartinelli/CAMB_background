@@ -15,7 +15,8 @@ real(dl), dimension(:),allocatable :: tempz, temp1, temp2, temp3  !temporary arr
 real(dl), dimension(:),allocatable :: b1, c1, d1, b2, c2, d2      !coefficient of polynomial for interpolation
 real(dl), dimension(:),allocatable :: bh, ch, dh
 
-logical                            :: debugging = .false.         !if T prints some files to check solver
+logical                            :: debugging = .false.         !if T prints some messages and files to check solver
+logical                            :: printfiles = .true.         !only prints files
 
 
 
@@ -131,7 +132,7 @@ subroutine deinterface(CP,diff)
       if (debugging) write(*,*) 'Om     =',(1-CP%omegav)
 
 
-      if (debugging) then
+      if (debugging .or. printfiles) then
          open(656, file='test_modomega.dat') !prints omega_m(z) with modified expansion (col1=z, col2=Omega_m(z))
          open(747, file='test_standard.dat') !prints standard evolution Omega_i(z) using rhom (col2=mat col3=DE)
          open(666, file='test_psi.dat')      !prints the differential equation solution for psi

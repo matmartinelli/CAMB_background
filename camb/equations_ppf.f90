@@ -346,6 +346,16 @@ call cpu_time(time2)
        call deinterface(CP,diff)
     end if
 
+    write(*,*) '-----FINAL SET OF PARAMETERS-----'
+    write(*,*) 'c2=', CP%c2_dhost
+    write(*,*) 'c3=', CP%c3_dhost
+    write(*,*) 'c4=', CP%c4_dhost
+    write(*,*) 'beta=', CP%beta_dhost
+    write(*,*) 'omegam=',1-CP%omegav
+    write(*,*) 'H0=',CP%H0
+    write(*,*) '---------------------------------'
+
+
     !-------------------------------------------------------------------
 
     end  subroutine init_background
