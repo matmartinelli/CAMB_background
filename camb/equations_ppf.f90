@@ -242,9 +242,11 @@
     integer  :: iter
     integer, parameter :: maxiter = 1
     real(dl), parameter :: minitol = 0.01
+    integer :: countnan
 
 
     global_error_flag= 0
+    countnan = 0
 
     if (minimizeme) then
        condrealmat = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost !Real xi in matter era
@@ -254,23 +256,15 @@
 
        bb = condreal-1.e-4  !upper limit of the minimizing interval
        !MMchange: setting the lower limit for the interval
-call cpu_time(time1)
+       call cpu_time(time1)
        if (condreal.gt.0._dl) then
           aa = -5*bb
        else
           aa = 2.*bb
        end if
-!       aa = -10._dl
-!       aastep = (bb - aa)/maxiter
 
        if (mindebug) open(34,file='H0_beta.dat') 
 
-!do iter=1,maxiter
-!       if (condreal.gt.0._dl) then
-!          aa = -5*bb
-!       else
-!          aa = 2.*bb
-!       end if
 
        if (mindebug) then
           write ( *, '(a)' ) ' '
@@ -281,66 +275,68 @@ call cpu_time(time1)
        end if
        stepmin = 0
 
-       arg = aa!bb-iter*aastep
+       arg = aa
        value = minifunc ( arg )
+       if (value /= value) countnan = countnan + 1
        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
        arg = bb
        value = minifunc ( arg )
+       if (value /= value) countnan = countnan + 1
        if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
 
-       amin = aa!bb-iter*aastep
+       amin = aa
        bmin = bb
-!write(*,*) '------------EXTREMES----------',amin,bmin
+
        status = 0
 
-       do
-       
-         call local_min_rc ( amin, bmin, arg, status, value )
+       if (countnan .lt. 2) then
+          do
+          
+            call local_min_rc ( amin, bmin, arg, status, value )
 
-         if ( status < 0 ) then
-           write ( *, '(a)' ) ' '
-           write ( *, '(a)' ) 'TEST_LOCAL_MIN_RC_ONE - Fatal error!'
-           write ( *, '(a)' ) '  LOCAL_MIN_RC returned negative status.'
-           exit
-         end if
-         value = minifunc ( arg )
-         stepmin = stepmin + 1
-         if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
-         if (mindebug) write (34, *) arg,value
-         if (mindebug) write ( *,*)'-----------------------------------------------------------------'
-         if ( status == 0 ) then
-           exit
-         end if
+            if ( status < 0 ) then
+              write ( *, '(a)' ) ' '
+              write ( *, '(a)' ) 'TEST_LOCAL_MIN_RC_ONE - Fatal error!'
+              write ( *, '(a)' ) '  LOCAL_MIN_RC returned negative status.'
+              exit
+            end if
+            value = minifunc ( arg )
+            stepmin = stepmin + 1
+            if (mindebug) write ( *, '(2x,i4,2x,g24.16,2x,g24.16)' ) stepmin, arg, value
+            if (mindebug) write (34, *) arg,value
+            if (mindebug) write ( *,*)'-----------------------------------------------------------------'
+            if ( status == 0 ) then
+              exit
+            end if
 
-       end do
-       call cpu_time(time2)
-       CP%beta_dhost = arg
-       call deinterface(CP,diff)
-       call getH(1._dl,finalhubble)
+          end do
+          call cpu_time(time2)
+          CP%beta_dhost = arg
+          call deinterface(CP,diff)
+          call getH(1._dl,finalhubble)
 
-
-       !if (iter.eq.maxiter) then
-       if (diff.gt.minitol) then
-          global_error_flag         = 17
-          global_error_message      = 'DHOST: H0 minimization failed'
+          if (diff.gt.minitol) then
+             global_error_flag         = 17
+             global_error_message      = 'DHOST: H0 minimization failed'
+             return
+          end if
+       else
+          global_error_flag         = 42
+          global_error_message      = 'DHOST: both extremes are NaN: skipping point'
           return
        end if
 
-       savebetadhost = CP%beta_dhost
 
-!end do
        if (mindebug) close(34)
-call cpu_time(time2)
+       call cpu_time(time2)
        if (mindebug) write(*,*) '--------MINIMIZATION DONE--------'
        if (mindebug) write(*,*) 'input H0                        =',CP%H0
        if (mindebug) write(*,*) 'DHOST H0                        =',finalhubble
        if (mindebug) write(*,*) '|H0-H(z=0)|                     =',diff
-       !if (mindebug) write(*,*) '100 theta (CosmoMC)             =',100*CosmomcTheta()
        if (mindebug) write(*,*) 'final beta                      =',CP%beta_dhost
        if (mindebug) write(*,*) 'number of iterations needed     =',stepmin
        if (mindebug) write(*,*) 'elapsed time (seconds)          =',time2-time1
        if (mindebug) write(*,*) '---------------------------------'
-       !if (mindebug) stop
     
     else
        call deinterface(CP,diff)
