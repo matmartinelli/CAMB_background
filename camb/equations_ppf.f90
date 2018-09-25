@@ -318,11 +318,13 @@
           if (diff.gt.minitol) then
              global_error_flag         = 17
              global_error_message      = 'DHOST: H0 minimization failed'
+             write(*,*) global_error_message
              return
           end if
        else
           global_error_flag         = 42
           global_error_message      = 'DHOST: both extremes are NaN: skipping point'
+          write(*,*) global_error_message
           return
        end if
 
