@@ -240,7 +240,7 @@
     real(dl) :: condrealmat, condrealds, condreal   !beta>condreal gives complex initial conditions
     logical, parameter  :: minimizeme = .true.
     integer  :: iter
-    integer, parameter :: maxiter = 1
+    integer, parameter :: maxiter = 1000
     real(dl), parameter :: minitol = 0.01
     integer :: countnan
 
@@ -290,7 +290,7 @@
        status = 0
 
        if (countnan .lt. 2) then
-          do
+          do iter=1,maxiter
           
             call local_min_rc ( amin, bmin, arg, status, value )
 
