@@ -27,6 +27,7 @@ character(100)                        :: chnum
     integer  :: iter
     integer, parameter :: maxiter = 1
     real*8, parameter :: minitol = 0.01
+    logical, parameter :: do_bao = .false.
 
 integer :: i,j,k
 
@@ -117,10 +118,10 @@ do j=1,nlines
    incolSN(j,numcolSN+1) = betadh
 
        !if (iter.eq.maxiter) then
-   if (diff.gt.minitol) then
-      write(*,*) 'THIS SHOULD NOT HAPPEN'
-      stop
-   end if
+   !if (diff.gt.minitol) then
+   !   write(*,*) 'THIS SHOULD NOT HAPPEN'
+   !   stop
+   !end if
 end do
    
 
@@ -133,7 +134,7 @@ end do
    deallocate(incolSN)
 
 end do
-
+if (do_bao) then
 !Doing JLA+BAO
 do i=1,numchains
    write(chnum,*) i
@@ -221,10 +222,10 @@ do j=1,nlines
    incolSNBAO(j,numcolSNBAO+1) = betadh
 
        !if (iter.eq.maxiter) then
-   if (diff.gt.minitol) then
-      write(*,*) 'THIS SHOULD NOT HAPPEN'
-      stop
-   end if
+!   if (diff.gt.minitol) then
+!      write(*,*) 'THIS SHOULD NOT HAPPEN'
+!      stop
+!   end if
 end do
    
 
@@ -238,6 +239,6 @@ end do
 
 end do
 
-
+end if
 
 end program converter

@@ -20,7 +20,7 @@ import planckStyle
 g = planckStyle.getSinglePlotter(chain_dir = './converted_chains', ratio=1)
 
 
-roots = ['JLA_DHOST_converted','JLA+BAO_DHOST_converted']
+roots = ['JLA_DHOST_converted']#,'JLA+BAO_DHOST_converted']
 #roots= ['pk+BSH_varbin']
 params = ['H0','omegam','c2dhost','c3dhost','c4dhost','betadhost']
 colors = ['#8E001C','#FFB300','black']

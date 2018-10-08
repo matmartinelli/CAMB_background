@@ -352,17 +352,12 @@
     integer ii,jj
     real(mcp) rsdrag_theory
 
-write(0,*) 'TEST!!!'
     z = this%bao_z(1)
     rsdrag_theory = this%get_rs_drag(Theory)
-write(0,*) rsdrag_theory,this%Calculator%AngularDiameterDistance(z)
     alpha_perp=(this%Calculator%AngularDiameterDistance(z)/rsdrag_theory)/(this%DA_rd_fid)!CMASS/LOWZ
     alpha_plel=(this%Hrd_fid)/((this%Calculator%Hofz_Hunit(z))*rsdrag_theory)!CMASS/LOWZ
-write(0,*) this%alpha_perp_file(1),alpha_perp,this%alpha_perp_file(this%alpha_npoints-1)
-write(0,*) this%alpha_plel_file(1),alpha_plel,this%alpha_plel_file(this%alpha_npoints-1)
     if ((alpha_perp < this%alpha_perp_file(1)).or.(alpha_perp > this%alpha_perp_file(this%alpha_npoints-1)).or. &
         &   (alpha_plel < this%alpha_plel_file(1)).or.(alpha_plel > this%alpha_plel_file(this%alpha_npoints-1))) then
-write(0,*) 'o qui?'
     BAO_DR1x_loglike = logZero
     else
         ii=1+floor((alpha_perp-this%alpha_perp_file(1))/this%dalpha_perp)
@@ -375,12 +370,10 @@ write(0,*) 'o qui?'
         if  (prob > 0) then
             BAO_DR1x_loglike = -log( prob )
         else
-write(0,*) 'qui?'
             BAO_DR1x_loglike = logZero
         endif
     endif
 
-write(0,*) 'final=',BAO_DR1x_loglike,logZero
 
     end function BAO_DR1x_loglike
 
@@ -404,7 +397,7 @@ write(0,*) 'final=',BAO_DR1x_loglike,logZero
     real(mcp) BAO_MGS_loglike
     real (mcp) alphamgs, chi2
     real(mcp),parameter :: rsfidmgs = 148.69_mcp, DVfidmgs = 638.9518_mcp
-    real(mcp), parameter :: alpha_min=0.8005_mcp, alpha_max = 1.5985_mcp
+    real(mcp), parameter :: alpha_min=0.8005_mcp, alpha_max = 1.1985_mcp
     integer ii
 
     alphamgs =   this%Calculator%BAO_D_v(this%bao_z(1))/this%get_rs_drag(Theory) / (DVfidmgs / rsfidmgs)

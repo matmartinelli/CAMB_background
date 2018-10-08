@@ -16,7 +16,7 @@ real(dl), dimension(:),allocatable :: b1, c1, d1, b2, c2, d2      !coefficient o
 real(dl), dimension(:),allocatable :: bh, ch, dh
 
 logical                            :: debugging = .false.         !if T prints some messages and files to check solver
-logical                            :: printfiles = .true.         !only prints files
+logical                            :: printfiles = .false.         !only prints files
 
 
 
