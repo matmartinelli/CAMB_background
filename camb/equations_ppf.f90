@@ -1,3 +1,4 @@
+
     ! Equations module for dark energy with constant equation of state parameter w
     ! allowing for perturbations based on a quintessence model
     ! by Antony Lewis (http://cosmologist.info/)
@@ -224,7 +225,7 @@
     !For an explanation of the variables and methods look at:
     !https://people.sc.fsu.edu/~jburkardt/f_src/brent/brent.html
 
-    logical, parameter  :: mindebug = .false. !if set to true prints a bunch of info on the minimization process
+    logical, parameter  :: mindebug = .true. !if set to true prints a bunch of info on the minimization process
     real(dl)            :: diff               !difference between H0 and computed H(z=0)
     real(dl)            :: time1, time2       !variables for time computation
     real(dl)            :: finalhubble        !H(z=0) after minizer
@@ -238,9 +239,11 @@
     real(dl)            :: arg
 
     real(dl) :: condrealmat, condrealds, condreal   !beta>condreal gives complex initial conditions
+    real(dl) :: dSAttract, dSGhost, dSGradient     !Stability variables
     logical, parameter  :: minimizeme = .true.
+    logical, parameter :: dSStability = .true.    !Stability Conditions
     integer  :: iter
-    integer, parameter :: maxiter = 1000
+    integer, parameter :: maxiter = 500
     real(dl), parameter :: minitol = 0.01
     integer :: countnan
 
@@ -248,28 +251,51 @@
     global_error_flag= 0
     countnan = 0
 
+
+
     if (minimizeme) then
        condrealmat = (CP%c3_dhost**2./CP%c2_dhost)-(48./9.)*CP%c4_dhost !Real xi in matter era
        condrealds = (CP%c3_dhost**2./(2.*CP%c2_dhost))-(8./3.)*CP%c4_dhost !Real xi in de Sitter
 
+      If(CP%c2_dhost.gt.0._dl) then
+
+
        condreal = min(condrealmat,condrealds)
 
-       bb = condreal-1.e-4  !upper limit of the minimizing interval
-       !MMchange: setting the lower limit for the interval
-       call cpu_time(time1)
-       if (condreal.gt.0._dl) then
+          bb = condreal-1.e-4  !upper limit of the minimizing interval
+           !MMchange: setting the lower limit for the interval
+           call cpu_time(time1)
+          if (condreal.gt.0._dl) then
           aa = -5*bb
-       else
-          aa = 2.*bb
-       end if
+         else
+           aa = 5.*bb
+         end if
+
+      else
+
+    condreal = max(condrealmat, condrealds)
+
+          aa = condreal+1.e-4  !lower limit of the minimizing interval
+           !MMchange: setting the upper limit for the interval
+           call cpu_time(time1)
+          if (condreal.gt.0._dl) then
+          bb = 5*aa
+         else
+           bb = -5.*aa
+         end if
+
+    end if
+
+
+
 
        if (mindebug) open(34,file='H0_beta.dat') 
 
 
        if (mindebug) then
           write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) ' '
-          write ( *, '(a)' ) ' '
+          write ( *, * ) 'cs ', CP%c2_dhost, CP%c3_dhost, CP%c4_dhost 
+          write ( *, * ) 'xis ', condrealmat, condrealds
           write ( *, '(a)' ) '  Step      X                          F(X)'
           write ( *, '(a)' ) ' '
        end if
@@ -321,6 +347,100 @@
              write(*,*) global_error_message
              return
           end if
+
+
+if(dSStability) then
+
+
+dsAttract=  (CP%c2_dhost*(-3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) + CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + &
+         &   3*CP%beta_dhost))))**2*((2*2**0.25*Sqrt(3.)*Sqrt(-(CP%c2_dhost**2/((-3*CP%c3_dhost**2 + 8*CP%c2_dhost*CP%c4_dhost + 3*CP%c2_dhost*CP%beta_dhost - CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 &
+         &  - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))*Sqrt(-(CP%c2_dhost/(-3*CP%c3_dhost**2 + 3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 &
+         &  - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))))))*  &
+         &  (18*CP%c3_dhost**4 - 3*CP%c2_dhost*CP%c3_dhost**2*(8*CP%c4_dhost + 3*CP%beta_dhost) - 6*CP%c2_dhost**2*(32*CP%c4_dhost**2 + 20*CP%c4_dhost*CP%beta_dhost + 3*CP%beta_dhost**2) &
+         &   + 6*CP%c3_dhost**3*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)) + CP%c2_dhost*CP%c3_dhost*(8*CP%c4_dhost &
+         &   + 3*CP%beta_dhost)*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))/(3*CP%c3_dhost**2 - 3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) &
+         &    + CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))**2 - &
+         &    12*2**0.75*CP%c3_dhost*(-(CP%c2_dhost/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + &
+         & 3*CP%beta_dhost))))))**0.75*(1 - (2*CP%c2_dhost*CP%c4_dhost)/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 &
+         &   - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))))))/(-2*CP%c2_dhost*(-9*CP%c3_dhost**4 + 12*CP%c2_dhost*CP%c3_dhost**2*CP%c4_dhost + 6*CP%c2_dhost**2*(32*CP%c4_dhost**2 &
+         &    + 20*CP%c4_dhost*CP%beta_dhost + 3*CP%beta_dhost**2) - 3*CP%c3_dhost**3*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))&
+         &   - CP%c2_dhost*CP%c3_dhost*(4*CP%c4_dhost + 3*CP%beta_dhost)*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))) +  Sqrt(2.)*CP%c3_dhost*(3*CP%c3_dhost**2 &
+         &    - CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost) + CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))*(-3*Sqrt(2.)*CP%c2_dhost*CP%c3_dhost &
+         &   - 2*Sqrt(3.)*(3*CP%c3_dhost**2 - 6*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) + CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))*   &
+         &   Sqrt(-(CP%c2_dhost/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))))* &
+         &    Sqrt(CP%c2_dhost/(1 - (4*CP%c2_dhost*CP%c4_dhost)/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost &
+         &   + 3*CP%beta_dhost))))))))
+
+dSGhost=   (2*(144*CP%c2_dhost**3*CP%c4_dhost**2 + 108*CP%c2_dhost**3*CP%c4_dhost*CP%beta_dhost + 18*CP%c2_dhost**3*CP%beta_dhost**2 + 32*CP%c2_dhost**2*CP%c4_dhost*(3*CP%c2_dhost*(4*CP%c4_dhost &
+       &    + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))) + 9*CP%c2_dhost**2*CP%beta_dhost*(3*CP%c2_dhost*(4*CP%c4_dhost &
+       &    + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))) - &
+       &    CP%c2_dhost*(-3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) + CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))**2 &
+       &   - (Sqrt(2.)*CP%c2_dhost*CP%c3_dhost*(3*CP%c3_dhost*(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost +&
+       &  3*CP%beta_dhost))))*(Sqrt(2.)*Sqrt(-(CP%c2_dhost/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost +&
+       & 3*CP%beta_dhost)))))) + 4*Sqrt(2.)*CP%c4_dhost*(-(CP%c2_dhost/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost &
+       & + 3*CP%beta_dhost))))))**1.5) + Sqrt(3.)*(-6*CP%c3_dhost**2 + 3*CP%c2_dhost*(16*CP%c4_dhost + 5*CP%beta_dhost) - 2*CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost +&
+       &   3*CP%beta_dhost)))*Sqrt(CP%c2_dhost - (4*CP%c2_dhost**2*CP%c4_dhost)/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 -&
+       &    6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))))))/Sqrt(-(CP%c2_dhost/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 -&
+       &    6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))))))/&
+       &   (CP%c2_dhost*(-3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) + CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))**2)
+
+dSGradient= (4*CP%c2_dhost*(6*Sqrt(2.)*CP%c3_dhost**2*Sqrt(-(CP%c2_dhost/(-3*CP%c3_dhost**2 + 3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost &
+          &  + 3*CP%beta_dhost)))))*(-1 + (4*CP%c2_dhost*CP%c4_dhost)/(-3*CP%c3_dhost**2 &
+          & + 3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))) - &
+          & 2*Sqrt(2.)*CP%c2_dhost*(8*CP%c4_dhost + CP%beta_dhost)*Sqrt(-(CP%c2_dhost/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 &
+          &  - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))))*(2 - (2*CP%c2_dhost*(20*CP%c4_dhost &
+          &  + 3*CP%beta_dhost))/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))) + &
+          &   (CP%c2_dhost*CP%c3_dhost*(2 - (2*CP%c2_dhost*(52*CP%c4_dhost + 7*CP%beta_dhost))/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2&
+          &   - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost))))))/Sqrt(CP%c2_dhost/(3&
+          & - (12*CP%c2_dhost*CP%c4_dhost)/(3*CP%c2_dhost*(4*CP%c4_dhost + CP%beta_dhost) - CP%c3_dhost*(3*CP%c3_dhost + Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost    &
+          &  + 3*CP%beta_dhost))))))))/(-3*CP%c3_dhost**2 + 8*CP%c2_dhost*CP%c4_dhost + 3*CP%c2_dhost*CP%beta_dhost - CP%c3_dhost*Sqrt(9*CP%c3_dhost**2 - 6*CP%c2_dhost*(8*CP%c4_dhost + 3*CP%beta_dhost)))
+
+
+  if(isNan(dSGradient)) then
+    global_error_flag        = 15
+   global_error_message     = 'DHOST: dS Gradient Imaginary'
+  write(*,*) global_error_message
+    return
+    end if
+  if(isNan(dSGhost)) then
+    global_error_flag        = 19
+    global_error_message     = 'DHOST: dS GHost Imaginary'
+  write(*,*) global_error_message
+     return
+    end if
+  if(isNan(dSAttract)) then
+    global_error_flag        = 25
+    global_error_message     = 'DHOST: dS Attractor Imaginary'
+   write(*,*) global_error_message
+     return
+    end if
+
+
+    if(dsAttract<=0) then
+    global_error_flag        = 26
+    global_error_message     = 'DHOST: No dSAttractor'
+       write(*,*) global_error_message
+       return
+    end if
+    if(dsGhost<=0) then
+    global_error_flag        = 35
+    global_error_message     = 'DHOST: dS Ghost Instability'
+     write(*,*) global_error_message
+       return
+    end if
+
+   if(dsGradient<0) then
+    global_error_flag        = 36
+    global_error_message     = 'DHOST: dS Gradient Instability'
+     write(*,*) global_error_message
+    return
+    end if
+
+
+end if
+
+
+
        else
           global_error_flag         = 42
           global_error_message      = 'DHOST: both extremes are NaN: skipping point'
